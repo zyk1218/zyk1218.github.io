@@ -4,15 +4,26 @@
   <meta charset="utf-8">
   
   
-  <title>Hexo</title>
+  <title>innodb B+树 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://example.com/index.html">
+  <meta name="description" content="Q：为什么要有索引？当没有索引的时候如何查找数据？如果查询条件是主键的话，我们可以遍历页目录，使用二分法定位到数据，但如果我们的查询条件不是主键时，那么我们的页目录就用不上了，我们只能遍历所有的页，当数据量十分庞大的时候，查询效率十分低下。 Q：B+树的索引是怎么构建起来的？有什么依据吗？B+树长什么样？最后一层存放用户记录，称为叶子节点；除最后一层外的节点用于存放目录项，均称为非叶子节点通常一颗">
+<meta property="og:type" content="article">
+<meta property="og:title" content="innodb B+树">
+<meta property="og:url" content="http://example.com/2023/05/21/innodb-B-%E6%A0%91/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Q：为什么要有索引？当没有索引的时候如何查找数据？如果查询条件是主键的话，我们可以遍历页目录，使用二分法定位到数据，但如果我们的查询条件不是主键时，那么我们的页目录就用不上了，我们只能遍历所有的页，当数据量十分庞大的时候，查询效率十分低下。 Q：B+树的索引是怎么构建起来的？有什么依据吗？B+树长什么样？最后一层存放用户记录，称为叶子节点；除最后一层外的节点用于存放目录项，均称为非叶子节点通常一颗">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684643956609-c3229eee-6604-4e3a-bf2d-c5a5345b690f.webp#averageHue=%23fafafa&clientId=ub80ad07d-5015-4&from=paste&height=259&id=u106499cb&originHeight=533&originWidth=1136&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=ue18ed32b-2a5d-4445-9dad-b7d998ad523&title=&width=552">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644377829-352501d6-31a6-4561-8c6c-8e44dfcfa193.webp#averageHue=%23fbf9f8&clientId=ub80ad07d-5015-4&from=paste&height=327&id=u937c3eb8&originHeight=517&originWidth=969&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u3732a373-61eb-48af-86b6-536f5927088&title=&width=613">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644431101-95f12f13-f341-4b5f-8d23-286611eff938.webp#averageHue=%23f9f3ef&clientId=ub80ad07d-5015-4&from=paste&height=335&id=u524efe8b&originHeight=573&originWidth=1098&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uae958545-9bf4-413f-b629-36473b9c9f2&title=&width=641">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644615412-32ed3b18-6e7c-4833-85fc-d124a7ea6c71.webp#averageHue=%23e0dbc8&clientId=ub80ad07d-5015-4&from=paste&id=u81b2073b&originHeight=535&originWidth=1178&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uca9382fe-7512-4d18-8553-d7160babe80&title=">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644781592-c0206e12-e81d-4a24-a3d2-a90c91e0529c.webp#averageHue=%23dde0cc&clientId=ub80ad07d-5015-4&from=paste&id=u72070dbd&originHeight=579&originWidth=1080&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uc2db5312-77c7-4aa7-93c5-f6f3407b65f&title=">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684646099890-88cd0a99-b2f8-4d89-a67c-7e101aab5079.webp#averageHue=%23e1e2d0&clientId=ub80ad07d-5015-4&from=paste&id=u25b15658&originHeight=617&originWidth=1153&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u90dcb8e7-7d14-44f9-9c70-6f36b11f7e7&title=">
+<meta property="article:published_time" content="2023-05-21T15:31:43.000Z">
+<meta property="article:modified_time" content="2023-05-21T15:34:20.601Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684643956609-c3229eee-6604-4e3a-bf2d-c5a5345b690f.webp#averageHue=%23fafafa&clientId=ub80ad07d-5015-4&from=paste&height=259&id=u106499cb&originHeight=533&originWidth=1136&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=ue18ed32b-2a5d-4445-9dad-b7d998ad523&title=&width=552">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -71,9 +82,7 @@
 </header>
 
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-innodb-B-树" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-innodb-B-树" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/05/21/innodb-B-%E6%A0%91/" class="article-date">
   <time class="dt-published" datetime="2023-05-21T15:31:43.000Z" itemprop="datePublished">2023-05-21</time>
@@ -86,8 +95,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/05/21/innodb-B-%E6%A0%91/">innodb B+树</a>
+    <h1 class="p-name article-title" itemprop="headline name">
+      innodb B+树
     </h1>
   
 
@@ -148,170 +157,19 @@
     </footer>
   </div>
   
-</article>
-
-
-
+    
+<nav id="article-nav">
   
-    <article id="post-innodb行记录、数据组织形式" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/" class="article-date">
-  <time class="dt-published" datetime="2023-05-21T15:31:03.000Z" itemprop="datePublished">2023-05-21</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/">innodb行记录、数据组织形式</a>
-    </h1>
+    <a href="/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">innodb行记录、数据组织形式</div>
+    </a>
   
+</nav>
 
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="2023-05-13"><a href="#2023-05-13" class="headerlink" title="2023-05-13"></a>2023-05-13</h2><h3 id="1-innodb页"><a href="#1-innodb页" class="headerlink" title="1. innodb页"></a>1. innodb页</h3><h4 id="页是什么？为什么要有页的概念？"><a href="#页是什么？为什么要有页的概念？" class="headerlink" title="页是什么？为什么要有页的概念？"></a>页是什么？为什么要有页的概念？</h4><p>概念：页是innodb中磁盘和内存交互的基本单位，默认大小是16K。<br>意义：innodb是把数据存储在硬盘上的，但是在处理数据的时候却是在内存中的，如果在处理数据的时候把数据一条条数据的加载到内存或者写入到磁盘，那么就会导致innodb的读写效率十分的低，所以有了页的概念，可以使innodb一次性读出或写入多条数据</p>
-<h3 id="2-innodb页的结构"><a href="#2-innodb页的结构" class="headerlink" title="2. innodb页的结构"></a>2. innodb页的结构</h3><h4 id="在讲页的结构之前，需要先了解innodb中数据的“行格式”"><a href="#在讲页的结构之前，需要先了解innodb中数据的“行格式”" class="headerlink" title="在讲页的结构之前，需要先了解innodb中数据的“行格式”"></a>在讲页的结构之前，需要先了解innodb中数据的“行格式”</h4><p>数据是以记录的形式存储在磁盘中的，那么数据是如何组织起来进行存放的呢？“行格式”就是规定了数据如何存放的一个协议，所以“行格式”也称为“记录格式”</p>
-<ul>
-<li>行格式的种类： <ul>
-<li>compact<br><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/3/12/169710e8fafc21aa~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp#id=VCu7e&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title="><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683988033454-bb8be8e5-662d-4a59-a379-4ca750184bfb.webp#averageHue=%23f7ebe3&clientId=ufe91ca8b-3712-4&from=paste&id=u9b1d8b97&originHeight=250&originWidth=783&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u69c9a56d-974f-47b7-9990-38003b063ee&title="><br>从图来看，行格式分为两部分，一部分用于记录额外信息，一部分用于记录真实数据。</li>
-<li>redundant<br><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/3/12/169710e99a69ba3d~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp#id=HHzFP&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title="><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683988046339-97b714bb-322c-474e-bd52-2a3bd78ad2e0.webp#averageHue=%23f6e9e0&clientId=ufe91ca8b-3712-4&from=paste&id=u94dd4dd6&originHeight=251&originWidth=618&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u6136e7ba-0f4d-4590-b6a7-4c16f29317b&title="></li>
-<li>dynamic</li>
-<li>compressd</li>
-</ul>
-</li>
-<li>compact：<br><strong>变长字段的记录</strong>：部分字段的长度不固定，为了可以让innodb更好地处理此类字段，所以记录了该类字段的一些信息。<br>这些信息的记录规则是：将每一列变长字段的长度按照逆序存放。<br><strong>NULL值记录</strong>：当某个字段的值是NULL时，如果我们还将该字段记录在真实数据记录中，这样无疑会浪费空间，所以在compact中，将NULL值进行记录<br><strong>记录头信息</strong>：记录头信息大小为5byte，共40个二进制位，共记录了_删除标记_、<em>B+树中每层非叶子结点最小记录标识_、_当前记录拥有的记录数_、_当前记录在记录堆中的信息_、_记录类型_、_下一条记录的相对位置</em><br><strong>记录的真实数据</strong>：除了我们存储的字段外，innodb会给每条记录添加三列隐藏列——“row_id”、“transaction_id”、“roll_pointer”，分别代表“行记录ID”、“事务ID”、“回滚ID”。其中“row_id”是当用户没用定义主键且没有唯一键时用来充当“主键”的。 </li>
-<li>redundant:<br><strong>字段长度偏移列表</strong>：相比于compact格式，redundant格式在额外信息中记录的并不是变长字段列表，而是字段长度偏移量。也正是因为redundant没有记录变长字段的列表,所以它是将所有列的长度信息都按逆序的方式存储下来了。<br><strong>记录头信息</strong>：相比于compact格式，redundant格式的记录头信息的长度是6字节，48个二进制位，记录了_删除标记_、_B+树中每层非叶子结点最小记录标识_、_当前记录拥有的记录数_、_当前记录在记录堆中的信息_、_该记录中列的数量_、_标记长度偏移列表中每个列对应的偏移量是用1字节还是2字节表示的_、_下一条记录的绝对位置_。<br>与compatct格式不同的是，多了“记录中列数量”、“偏移量的长度标识”，compact用相对位置标识下一条记录，而redundant用绝对位置标识。<br><strong>与compact的不同之处</strong>： <ul>
-<li>多了“记录中列数量”、“偏移量的长度标识”</li>
-<li>compact用相对位置标识下一条记录，而redundant用绝对位置标识。</li>
-<li>redundant没有“记录类型”</li>
-<li>redundant中使用字段偏移量中的第一个比特位标识该列是否是NULL，而compact是用NULL列表来记录</li>
-</ul>
-</li>
-<li>行溢出：<br>数据页的基本大小为16k，但是有可能一条记录的大小就超过了16k，此类情况成为行溢出。 </li>
-<li>dynamic和compressd:<br>这两种行格式与compact很像，区别是处理行溢出的方式不同，dynamic是将所有的字节存储到另外一个页里，compressd是在dynamic的基础上应用了压缩算法。 </li>
-<li>行记录中的字段含义： <ul>
-<li>deleta_mask(删除标识)：当我们删除某一条记录的时候，innodb只是将该记录对应的delete_mask置为了1，而不是立马从磁盘上删除掉这条数据，原因是因为删除数据后需要重新排列，十分消耗性能。这些被删除的记录会组成一个垃圾链表，当有新数据要插入时，可以覆盖这些记录。</li>
-<li>heap_no(当前记录在该页中的位置)：位置都是从2开始的，因为0、1被两条虚拟记录占了，这两条虚拟记录分别是最大记录（supremum）和最小记录（infinum）</li>
-<li>record_type(记录标识)：共四种记录类型，0-普通记录，1-B+树非叶子结点记录，2-最小记录，3-最大记录。</li>
-</ul>
-</li>
-</ul>
-<h4 id="innodb的页结构"><a href="#innodb的页结构" class="headerlink" title="innodb的页结构"></a>innodb的页结构</h4><p><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683987973550-662e738c-6bdc-40be-a50b-5cf33e606473.webp#averageHue=%23d1a145&clientId=ufe91ca8b-3712-4&from=paste&id=u4d9be615&originHeight=1072&originWidth=934&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uca58be8c-ef5c-444a-8d58-4ba98f71eba&title="></p>
-<ul>
-<li>file header：文件头，占38byte，存储页的通用信息</li>
-<li>page header：页头，占56byte，存储页的专有信息</li>
-<li>infinum + supremum：占26byte，本页中数据的最小记录和最大记录</li>
-<li>user records：大小不定，用户存储的记录</li>
-<li>free space：大小不定，空余空间</li>
-<li>page directory：大小不定，页面中某些记录的相对位置</li>
-<li>file trailer：占8byte，校验页的完整性</li>
-</ul>
-<p><strong>page directpry</strong>页目录<br>页目录类似书本的目录，用于帮innodb快速定位目标数据，它的形成如下：</p>
-<ol>
-<li>将数据记录进行分组</li>
-<li>每组的最后一条记录的记录头信息中的n_owner字段记录了改组中拥有几条记录</li>
-<li>将每组的最后一条记录的偏移量提取出来放在页尾，也就是page directory中。</li>
-</ol>
-<p><strong>page header</strong>页的头部<br>页头用于存储本页专有的一些信息，如下：</p>
-<ul>
-<li>PAGE_N_DIR_SLOTS：页中的槽数量</li>
-<li>PAGE_HEAP_TOP：还未使用的空间最小地址，也就是说从该地址之后就是Free Space</li>
-<li>PAGE_N_HEAP：本页中的记录的数量（包括最小和最大记录以及标记为删除的记录）</li>
-<li>PAGE_FREE：第一个已经标记为删除的记录地址（各个已删除的记录通过next_record也会组成一个单链表，这个单链表中的记录可以被重新利用）</li>
-<li>PAGE_GARBAGE：已删除记录占用的字节数</li>
-<li>PAGE_LAST_INSERT：最后插入记录的位置</li>
-<li>PAGE_DIRECTION：记录插入的方向</li>
-<li>PAGE_N_DIRECTION：一个方向连续插入的记录数量</li>
-<li>PAGE_N_RECS：	该页中记录的数量（不包括最小和最大记录以及被标记为删除的记录）</li>
-<li>PAGE_MAX_TRX_ID：修改当前页的最大事务ID，该值仅在二级索引中定义</li>
-<li>PAGE_LEVEL：当前页在B+树中所处的层级</li>
-<li>PAGE_INDEX_ID：索引ID，表示当前页属于哪个索引</li>
-<li>PAGE_BTR_SEG_LEAF：B+树叶子段的头部信息，仅在B+树的Root页定义</li>
-<li>PAGE_BTR_SEG_TOP：B+树非叶子段的头部信息，仅在B+树的Root页定义</li>
-</ul>
-<p><strong>File Header文件头部</strong><br>所有的页通用的结构，存储信息如下：</p>
-<ul>
-<li>FIL_PAGE_SPACE_OR_CHKSUM：页的校验和（checksum值），把一个较长的字符串转换为较短的字符串，在比较这个字符串之前可以先比较校验和，如果校验和都不一样的话，那么参与比较的俩字符串肯定不一样</li>
-<li>FIL_PAGE_OFFSET：页号</li>
-<li>FIL_PAGE_PREV：上一个页的页号</li>
-<li>FIL_PAGE_NEXT：下一个页的页号</li>
-<li>FIL_PAGE_LSN：页面被最后修改时对应的日志序列位置</li>
-<li>FIL_PAGE_TYPE：该页的类型</li>
-<li>FIL_PAGE_FILE_FLUSH_LSN：仅在系统表空间的一个页中定义，代表文件至少被刷新到了对应的LSN值</li>
-<li>FIL_PAGE_ARCH_LOG_NO_OR_SPACE_ID：页属于哪个表空间</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/" data-id="clhxkx6z50000b0wo0z0l4sdy" data-title="innodb行记录、数据组织形式" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-    </footer>
-  </div>
   
 </article>
-
-
-
-  
-    <article id="post-LT启动" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/05/21/LT%E5%90%AF%E5%8A%A8/" class="article-date">
-  <time class="dt-published" datetime="2023-05-21T15:20:14.000Z" itemprop="datePublished">2023-05-21</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/05/21/LT%E5%90%AF%E5%8A%A8/">LT启动</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h3 id="交流时间：每周日15：00点"><a href="#交流时间：每周日15：00点" class="headerlink" title="交流时间：每周日15：00点"></a>交流时间：每周日15：00点</h3><h3 id="固定分享内容："><a href="#固定分享内容：" class="headerlink" title="固定分享内容："></a>固定分享内容：</h3><ul>
-<li>思考：需求、培训等工作中各种各样的思考，有趣的需求，受益的感悟···</li>
-<li>故障分享：自己遇到的线上线下问题、别的团队的线上事故等，是怎么发生的，是怎么解决的，有什么可以借鉴的经验</li>
-<li>业务理解：为对方讲解自己负责系统的功能、边界，自己对该系统的技术规划、业务的理解，表达清楚所以然</li>
-<li>新技术：偶然间读到的一篇博文、公众号推送等，总结出概要，讲清楚重点</li>
-</ul>
-<h3 id="指定分享内容："><a href="#指定分享内容：" class="headerlink" title="指定分享内容："></a>指定分享内容：</h3><ul>
-<li>innodb的数据组织、存储格式</li>
-</ul>
-<h3 id="todo"><a href="#todo" class="headerlink" title="todo:"></a>todo:</h3><ol>
-<li>五月底完善各自的博客，后续的分享基于博客</li>
-</ol>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/05/21/LT%E5%90%AF%E5%8A%A8/" data-id="clhxkgddf00007swo2j1hc95n" data-title="LT启动" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
 </section>

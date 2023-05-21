@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>innodb行记录、数据组织形式 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="2023-05-131. innodb页页是什么？为什么要有页的概念？概念：页是innodb中磁盘和内存交互的基本单位，默认大小是16K。意义：innodb是把数据存储在硬盘上的，但是在处理数据的时候却是在内存中的，如果在处理数据的时候把数据一条条数据的加载到内存或者写入到磁盘，那么就会导致innodb的读写效率十分的低，所以有了页的概念，可以使innodb一次性读出或写入多条数据 2. inno">
+<meta property="og:type" content="article">
+<meta property="og:title" content="innodb行记录、数据组织形式">
+<meta property="og:url" content="http://example.com/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="2023-05-131. innodb页页是什么？为什么要有页的概念？概念：页是innodb中磁盘和内存交互的基本单位，默认大小是16K。意义：innodb是把数据存储在硬盘上的，但是在处理数据的时候却是在内存中的，如果在处理数据的时候把数据一条条数据的加载到内存或者写入到磁盘，那么就会导致innodb的读写效率十分的低，所以有了页的概念，可以使innodb一次性读出或写入多条数据 2. inno">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/3/12/169710e8fafc21aa~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp#id=VCu7e&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683988033454-bb8be8e5-662d-4a59-a379-4ca750184bfb.webp#averageHue=%23f7ebe3&clientId=ufe91ca8b-3712-4&from=paste&id=u9b1d8b97&originHeight=250&originWidth=783&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u69c9a56d-974f-47b7-9990-38003b063ee&title=">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/3/12/169710e99a69ba3d~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp#id=HHzFP&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683988046339-97b714bb-322c-474e-bd52-2a3bd78ad2e0.webp#averageHue=%23f6e9e0&clientId=ufe91ca8b-3712-4&from=paste&id=u94dd4dd6&originHeight=251&originWidth=618&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u6136e7ba-0f4d-4590-b6a7-4c16f29317b&title=">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683987973550-662e738c-6bdc-40be-a50b-5cf33e606473.webp#averageHue=%23d1a145&clientId=ufe91ca8b-3712-4&from=paste&id=u4d9be615&originHeight=1072&originWidth=934&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uca58be8c-ef5c-444a-8d58-4ba98f71eba&title=">
+<meta property="article:published_time" content="2023-05-21T15:31:03.000Z">
+<meta property="article:modified_time" content="2023-05-21T15:33:57.926Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/3/12/169710e8fafc21aa~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp#id=VCu7e&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-innodb行记录、数据组织形式" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/" class="article-date">
+  <time class="dt-published" datetime="2023-05-21T15:31:03.000Z" itemprop="datePublished">2023-05-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      innodb行记录、数据组织形式
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="2023-05-13"><a href="#2023-05-13" class="headerlink" title="2023-05-13"></a>2023-05-13</h2><h3 id="1-innodb页"><a href="#1-innodb页" class="headerlink" title="1. innodb页"></a>1. innodb页</h3><h4 id="页是什么？为什么要有页的概念？"><a href="#页是什么？为什么要有页的概念？" class="headerlink" title="页是什么？为什么要有页的概念？"></a>页是什么？为什么要有页的概念？</h4><p>概念：页是innodb中磁盘和内存交互的基本单位，默认大小是16K。<br>意义：innodb是把数据存储在硬盘上的，但是在处理数据的时候却是在内存中的，如果在处理数据的时候把数据一条条数据的加载到内存或者写入到磁盘，那么就会导致innodb的读写效率十分的低，所以有了页的概念，可以使innodb一次性读出或写入多条数据</p>
+<h3 id="2-innodb页的结构"><a href="#2-innodb页的结构" class="headerlink" title="2. innodb页的结构"></a>2. innodb页的结构</h3><h4 id="在讲页的结构之前，需要先了解innodb中数据的“行格式”"><a href="#在讲页的结构之前，需要先了解innodb中数据的“行格式”" class="headerlink" title="在讲页的结构之前，需要先了解innodb中数据的“行格式”"></a>在讲页的结构之前，需要先了解innodb中数据的“行格式”</h4><p>数据是以记录的形式存储在磁盘中的，那么数据是如何组织起来进行存放的呢？“行格式”就是规定了数据如何存放的一个协议，所以“行格式”也称为“记录格式”</p>
+<ul>
+<li>行格式的种类： <ul>
+<li>compact<br><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/3/12/169710e8fafc21aa~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp#id=VCu7e&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title="><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683988033454-bb8be8e5-662d-4a59-a379-4ca750184bfb.webp#averageHue=%23f7ebe3&clientId=ufe91ca8b-3712-4&from=paste&id=u9b1d8b97&originHeight=250&originWidth=783&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u69c9a56d-974f-47b7-9990-38003b063ee&title="><br>从图来看，行格式分为两部分，一部分用于记录额外信息，一部分用于记录真实数据。</li>
+<li>redundant<br><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/3/12/169710e99a69ba3d~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp#id=HHzFP&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title="><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683988046339-97b714bb-322c-474e-bd52-2a3bd78ad2e0.webp#averageHue=%23f6e9e0&clientId=ufe91ca8b-3712-4&from=paste&id=u94dd4dd6&originHeight=251&originWidth=618&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u6136e7ba-0f4d-4590-b6a7-4c16f29317b&title="></li>
+<li>dynamic</li>
+<li>compressd</li>
+</ul>
+</li>
+<li>compact：<br><strong>变长字段的记录</strong>：部分字段的长度不固定，为了可以让innodb更好地处理此类字段，所以记录了该类字段的一些信息。<br>这些信息的记录规则是：将每一列变长字段的长度按照逆序存放。<br><strong>NULL值记录</strong>：当某个字段的值是NULL时，如果我们还将该字段记录在真实数据记录中，这样无疑会浪费空间，所以在compact中，将NULL值进行记录<br><strong>记录头信息</strong>：记录头信息大小为5byte，共40个二进制位，共记录了_删除标记_、<em>B+树中每层非叶子结点最小记录标识_、_当前记录拥有的记录数_、_当前记录在记录堆中的信息_、_记录类型_、_下一条记录的相对位置</em><br><strong>记录的真实数据</strong>：除了我们存储的字段外，innodb会给每条记录添加三列隐藏列——“row_id”、“transaction_id”、“roll_pointer”，分别代表“行记录ID”、“事务ID”、“回滚ID”。其中“row_id”是当用户没用定义主键且没有唯一键时用来充当“主键”的。 </li>
+<li>redundant:<br><strong>字段长度偏移列表</strong>：相比于compact格式，redundant格式在额外信息中记录的并不是变长字段列表，而是字段长度偏移量。也正是因为redundant没有记录变长字段的列表,所以它是将所有列的长度信息都按逆序的方式存储下来了。<br><strong>记录头信息</strong>：相比于compact格式，redundant格式的记录头信息的长度是6字节，48个二进制位，记录了_删除标记_、_B+树中每层非叶子结点最小记录标识_、_当前记录拥有的记录数_、_当前记录在记录堆中的信息_、_该记录中列的数量_、_标记长度偏移列表中每个列对应的偏移量是用1字节还是2字节表示的_、_下一条记录的绝对位置_。<br>与compatct格式不同的是，多了“记录中列数量”、“偏移量的长度标识”，compact用相对位置标识下一条记录，而redundant用绝对位置标识。<br><strong>与compact的不同之处</strong>： <ul>
+<li>多了“记录中列数量”、“偏移量的长度标识”</li>
+<li>compact用相对位置标识下一条记录，而redundant用绝对位置标识。</li>
+<li>redundant没有“记录类型”</li>
+<li>redundant中使用字段偏移量中的第一个比特位标识该列是否是NULL，而compact是用NULL列表来记录</li>
+</ul>
+</li>
+<li>行溢出：<br>数据页的基本大小为16k，但是有可能一条记录的大小就超过了16k，此类情况成为行溢出。 </li>
+<li>dynamic和compressd:<br>这两种行格式与compact很像，区别是处理行溢出的方式不同，dynamic是将所有的字节存储到另外一个页里，compressd是在dynamic的基础上应用了压缩算法。 </li>
+<li>行记录中的字段含义： <ul>
+<li>deleta_mask(删除标识)：当我们删除某一条记录的时候，innodb只是将该记录对应的delete_mask置为了1，而不是立马从磁盘上删除掉这条数据，原因是因为删除数据后需要重新排列，十分消耗性能。这些被删除的记录会组成一个垃圾链表，当有新数据要插入时，可以覆盖这些记录。</li>
+<li>heap_no(当前记录在该页中的位置)：位置都是从2开始的，因为0、1被两条虚拟记录占了，这两条虚拟记录分别是最大记录（supremum）和最小记录（infinum）</li>
+<li>record_type(记录标识)：共四种记录类型，0-普通记录，1-B+树非叶子结点记录，2-最小记录，3-最大记录。</li>
+</ul>
+</li>
+</ul>
+<h4 id="innodb的页结构"><a href="#innodb的页结构" class="headerlink" title="innodb的页结构"></a>innodb的页结构</h4><p><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683987973550-662e738c-6bdc-40be-a50b-5cf33e606473.webp#averageHue=%23d1a145&clientId=ufe91ca8b-3712-4&from=paste&id=u4d9be615&originHeight=1072&originWidth=934&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uca58be8c-ef5c-444a-8d58-4ba98f71eba&title="></p>
+<ul>
+<li>file header：文件头，占38byte，存储页的通用信息</li>
+<li>page header：页头，占56byte，存储页的专有信息</li>
+<li>infinum + supremum：占26byte，本页中数据的最小记录和最大记录</li>
+<li>user records：大小不定，用户存储的记录</li>
+<li>free space：大小不定，空余空间</li>
+<li>page directory：大小不定，页面中某些记录的相对位置</li>
+<li>file trailer：占8byte，校验页的完整性</li>
+</ul>
+<p><strong>page directpry</strong>页目录<br>页目录类似书本的目录，用于帮innodb快速定位目标数据，它的形成如下：</p>
+<ol>
+<li>将数据记录进行分组</li>
+<li>每组的最后一条记录的记录头信息中的n_owner字段记录了改组中拥有几条记录</li>
+<li>将每组的最后一条记录的偏移量提取出来放在页尾，也就是page directory中。</li>
+</ol>
+<p><strong>page header</strong>页的头部<br>页头用于存储本页专有的一些信息，如下：</p>
+<ul>
+<li>PAGE_N_DIR_SLOTS：页中的槽数量</li>
+<li>PAGE_HEAP_TOP：还未使用的空间最小地址，也就是说从该地址之后就是Free Space</li>
+<li>PAGE_N_HEAP：本页中的记录的数量（包括最小和最大记录以及标记为删除的记录）</li>
+<li>PAGE_FREE：第一个已经标记为删除的记录地址（各个已删除的记录通过next_record也会组成一个单链表，这个单链表中的记录可以被重新利用）</li>
+<li>PAGE_GARBAGE：已删除记录占用的字节数</li>
+<li>PAGE_LAST_INSERT：最后插入记录的位置</li>
+<li>PAGE_DIRECTION：记录插入的方向</li>
+<li>PAGE_N_DIRECTION：一个方向连续插入的记录数量</li>
+<li>PAGE_N_RECS：	该页中记录的数量（不包括最小和最大记录以及被标记为删除的记录）</li>
+<li>PAGE_MAX_TRX_ID：修改当前页的最大事务ID，该值仅在二级索引中定义</li>
+<li>PAGE_LEVEL：当前页在B+树中所处的层级</li>
+<li>PAGE_INDEX_ID：索引ID，表示当前页属于哪个索引</li>
+<li>PAGE_BTR_SEG_LEAF：B+树叶子段的头部信息，仅在B+树的Root页定义</li>
+<li>PAGE_BTR_SEG_TOP：B+树非叶子段的头部信息，仅在B+树的Root页定义</li>
+</ul>
+<p><strong>File Header文件头部</strong><br>所有的页通用的结构，存储信息如下：</p>
+<ul>
+<li>FIL_PAGE_SPACE_OR_CHKSUM：页的校验和（checksum值），把一个较长的字符串转换为较短的字符串，在比较这个字符串之前可以先比较校验和，如果校验和都不一样的话，那么参与比较的俩字符串肯定不一样</li>
+<li>FIL_PAGE_OFFSET：页号</li>
+<li>FIL_PAGE_PREV：上一个页的页号</li>
+<li>FIL_PAGE_NEXT：下一个页的页号</li>
+<li>FIL_PAGE_LSN：页面被最后修改时对应的日志序列位置</li>
+<li>FIL_PAGE_TYPE：该页的类型</li>
+<li>FIL_PAGE_FILE_FLUSH_LSN：仅在系统表空间的一个页中定义，代表文件至少被刷新到了对应的LSN值</li>
+<li>FIL_PAGE_ARCH_LOG_NO_OR_SPACE_ID：页属于哪个表空间</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/" data-id="clhxkx6z50000b0wo0z0l4sdy" data-title="innodb行记录、数据组织形式" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/05/21/innodb-B-%E6%A0%91/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          innodb B+树
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/05/21/LT%E5%90%AF%E5%8A%A8/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">LT启动</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/05/21/innodb-B-%E6%A0%91/">innodb B+树</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/">innodb行记录、数据组织形式</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/21/LT%E5%90%AF%E5%8A%A8/">LT启动</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
