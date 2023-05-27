@@ -4,19 +4,14 @@
   <meta charset="utf-8">
   
   
-  <title>LT启动 | Hexo</title>
+  <title>Tag: innodb | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="交流时间：每周日15：00点固定分享内容： 思考：需求、培训等工作中各种各样的思考，有趣的需求，受益的感悟··· 故障分享：自己遇到的线上线下问题、别的团队的线上事故等，是怎么发生的，是怎么解决的，有什么可以借鉴的经验 业务理解：为对方讲解自己负责系统的功能、边界，自己对该系统的技术规划、业务的理解，表达清楚所以然 新技术：偶然间读到的一篇博文、公众号推送等，总结出概要，讲清楚重点  指定分享内容">
-<meta property="og:type" content="article">
-<meta property="og:title" content="LT启动">
-<meta property="og:url" content="http://example.com/2023/05/21/LT%E5%90%AF%E5%8A%A8/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/tags/innodb/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="交流时间：每周日15：00点固定分享内容： 思考：需求、培训等工作中各种各样的思考，有趣的需求，受益的感悟··· 故障分享：自己遇到的线上线下问题、别的团队的线上事故等，是怎么发生的，是怎么解决的，有什么可以借鉴的经验 业务理解：为对方讲解自己负责系统的功能、边界，自己对该系统的技术规划、业务的理解，表达清楚所以然 新技术：偶然间读到的一篇博文、公众号推送等，总结出概要，讲清楚重点  指定分享内容">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-05-21T15:20:14.000Z">
-<meta property="article:modified_time" content="2023-05-27T14:17:27.772Z">
 <meta property="article:author" content="John Doe">
-<meta property="article:tag" content="learn with gh">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -76,70 +71,77 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-LT启动" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/05/21/LT%E5%90%AF%E5%8A%A8/" class="article-date">
-  <time class="dt-published" datetime="2023-05-21T15:20:14.000Z" itemprop="datePublished">2023-05-21</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
+        <section id="main">
   
-    <h1 class="p-name article-title" itemprop="headline name">
-      LT启动
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2023" class="archive-year">2023</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      <a href="/2023/05/27/innodb%E4%B8%AD%E5%8C%BA%E3%80%81%E6%AE%B5%E7%9A%84%E6%A6%82%E5%BF%B5/" class="archive-article-date">
+  <time class="dt-published" datetime="2023-05-27T14:16:42.000Z" itemprop="datePublished">May 27</time>
+</a>
+      
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2023/05/27/innodb%E4%B8%AD%E5%8C%BA%E3%80%81%E6%AE%B5%E7%9A%84%E6%A6%82%E5%BF%B5/">innodb中区、段的概念</a>
     </h1>
   
 
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h3 id="交流时间：每周日15：00点"><a href="#交流时间：每周日15：00点" class="headerlink" title="交流时间：每周日15：00点"></a>交流时间：每周日15：00点</h3><h3 id="固定分享内容："><a href="#固定分享内容：" class="headerlink" title="固定分享内容："></a>固定分享内容：</h3><ul>
-<li>思考：需求、培训等工作中各种各样的思考，有趣的需求，受益的感悟···</li>
-<li>故障分享：自己遇到的线上线下问题、别的团队的线上事故等，是怎么发生的，是怎么解决的，有什么可以借鉴的经验</li>
-<li>业务理解：为对方讲解自己负责系统的功能、边界，自己对该系统的技术规划、业务的理解，表达清楚所以然</li>
-<li>新技术：偶然间读到的一篇博文、公众号推送等，总结出概要，讲清楚重点</li>
-</ul>
-<h3 id="指定分享内容："><a href="#指定分享内容：" class="headerlink" title="指定分享内容："></a>指定分享内容：</h3><ul>
-<li>innodb的数据组织、存储格式</li>
-</ul>
-<h3 id="todo"><a href="#todo" class="headerlink" title="todo:"></a>todo:</h3><ol>
-<li>五月底完善各自的博客，后续的分享基于博客</li>
-</ol>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/05/21/LT%E5%90%AF%E5%8A%A8/" data-id="clhz0446l0000ngwo8c3v6dg0" data-title="LT启动" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/learn-with-gh/" rel="tag">learn with gh</a></li></ul>
-
-    </footer>
+    </header>
   </div>
+</article>
   
     
-<nav id="article-nav">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      <a href="/2023/05/21/innodb-B-%E6%A0%91/" class="archive-article-date">
+  <time class="dt-published" datetime="2023-05-21T15:31:43.000Z" itemprop="datePublished">May 21</time>
+</a>
+      
   
-    <a href="/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          innodb行记录、数据组织形式
-        
-      </div>
-    </a>
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2023/05/21/innodb-B-%E6%A0%91/">innodb B+树</a>
+    </h1>
   
-  
-</nav>
 
-  
+    </header>
+  </div>
 </article>
+  
+    
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      <a href="/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/" class="archive-article-date">
+  <time class="dt-published" datetime="2023-05-21T15:31:03.000Z" itemprop="datePublished">May 21</time>
+</a>
+      
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/">innodb行记录、数据组织形式</a>
+    </h1>
+  
+
+    </header>
+  </div>
+</article>
+  
+  
+    </div></section>
+  
 
 
 </section>
