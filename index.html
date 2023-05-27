@@ -73,6 +73,82 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-单表查询" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/05/27/%E5%8D%95%E8%A1%A8%E6%9F%A5%E8%AF%A2/" class="article-date">
+  <time class="dt-published" datetime="2023-05-27T15:37:06.000Z" itemprop="datePublished">2023-05-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2023/05/27/%E5%8D%95%E8%A1%A8%E6%9F%A5%E8%AF%A2/">单表查询</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `single_table` (</span><br><span class="line">  `id` <span class="type">int</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `key1` <span class="type">varchar</span>(<span class="number">100</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `key2` <span class="type">int</span> <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `key3` <span class="type">varchar</span>(<span class="number">100</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `key_part1` <span class="type">varchar</span>(<span class="number">100</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `key_part2` <span class="type">varchar</span>(<span class="number">100</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `key_part3` <span class="type">varchar</span>(<span class="number">100</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `common_field` <span class="type">varchar</span>(<span class="number">100</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`id`),</span><br><span class="line">  <span class="keyword">UNIQUE</span> KEY `idx_key2` (`key2`),</span><br><span class="line">  KEY `idx_key1` (`key1`),</span><br><span class="line">  KEY `idx_key3` (`key3`),</span><br><span class="line">  KEY `idx_key_part` (`key_part1`,`key_part2`,`key_part3`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB AUTO_INCREMENT<span class="operator">=</span><span class="number">10001</span> <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8mb3</span><br></pre></td></tr></table></figure>
+<h3 id="Q：单表查询都有哪些方式？"><a href="#Q：单表查询都有哪些方式？" class="headerlink" title="Q：单表查询都有哪些方式？"></a>Q：单表查询都有哪些方式？</h3><ol>
+<li><strong>const</strong>：使用主键或者唯一索引与一个常数值进行等值比较</li>
+<li><strong>ref</strong>：使用二级索引与一个常数值进行等值比较</li>
+<li><strong>ref_or_null</strong>：使用二级索引查出二级索引列的值等于某个常数记录的同时查出该二级索引列为null的记录</li>
+<li><strong>range</strong>：使用索引进行范围匹配，包括主键索引和二级索引</li>
+<li><strong>index</strong>：遍历二级索引记录获取目标值</li>
+<li><strong>all</strong>：扫描聚簇索引</li>
+</ol>
+<h3 id="Q：当一个查询可以使用多个二级索引时如何选择？"><a href="#Q：当一个查询可以使用多个二级索引时如何选择？" class="headerlink" title="Q：当一个查询可以使用多个二级索引时如何选择？"></a>Q：当一个查询可以使用多个二级索引时如何选择？</h3><p>sql：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> single_table <span class="keyword">WHERE</span> </span><br><span class="line">        (key1 <span class="operator">&gt;</span> <span class="string">&#x27;xyz&#x27;</span> <span class="keyword">AND</span> key2 <span class="operator">=</span> <span class="number">748</span> ) <span class="keyword">OR</span></span><br><span class="line">        (key1 <span class="operator">&lt;</span> <span class="string">&#x27;abc&#x27;</span> <span class="keyword">AND</span> key1 <span class="operator">&gt;</span> <span class="string">&#x27;lmn&#x27;</span>) <span class="keyword">OR</span></span><br><span class="line">        (key1 <span class="keyword">LIKE</span> <span class="string">&#x27;%suf&#x27;</span> <span class="keyword">AND</span> key1 <span class="operator">&gt;</span> <span class="string">&#x27;zzz&#x27;</span> <span class="keyword">AND</span> (key2 <span class="operator">&lt;</span> <span class="number">8000</span> <span class="keyword">OR</span> common_field <span class="operator">=</span> <span class="string">&#x27;abc&#x27;</span>)) ;</span><br></pre></td></tr></table></figure>
+<p>A：思路：</p>
+<ul>
+<li>思路1：把索引不包含的列替换为true，对sql进行“化简”，这样做的原因是我们建立的索引中不包含条件列，我们只能在回表时去筛选</li>
+<li>思路2：替换掉永远为TRUE或者FALSE的条件</li>
+</ul>
+<p><strong>当使用idx_key1完成查询时</strong>：<br>当我们使用idx_key1进行查询时，使用思路1进行化简：common_field无索引，key1的%suf无法使用索引</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> single_table <span class="keyword">WHERE</span> </span><br><span class="line">        (key1 <span class="operator">&gt;</span> <span class="string">&#x27;xyz&#x27;</span>) <span class="keyword">OR</span></span><br><span class="line">        (key1 <span class="operator">&lt;</span> <span class="string">&#x27;abc&#x27;</span> <span class="keyword">AND</span> key1 <span class="operator">&gt;</span> <span class="string">&#x27;lmn&#x27;</span>) <span class="keyword">OR</span></span><br><span class="line">        (key1 <span class="operator">&gt;</span> <span class="string">&#x27;zzz&#x27;</span>) ;</span><br></pre></td></tr></table></figure>
+<p>使用思路2再次进行化简：key1小于’abc’的同时大于’lmn’是不可能的</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> single_table <span class="keyword">WHERE</span> </span><br><span class="line">        (key1 <span class="operator">&gt;</span> <span class="string">&#x27;xyz&#x27;</span>) <span class="keyword">OR</span></span><br><span class="line">        (key1 <span class="operator">&gt;</span> <span class="string">&#x27;zzz&#x27;</span>) ;</span><br></pre></td></tr></table></figure>
+<p>对OR取并集：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> single_table <span class="keyword">WHERE</span> </span><br><span class="line">        (key1 <span class="operator">&gt;</span> <span class="string">&#x27;xyz&#x27;</span>) </span><br></pre></td></tr></table></figure>
+<p><strong>当使用idx_key2完成查询时</strong>：<br>当我们使用idx_key2进行查询时，进行化简：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> single_table <span class="keyword">WHERE</span> <span class="literal">TRUE</span></span><br></pre></td></tr></table></figure>
+<p>使用idx_key2的话需要遍历所有的二级索引并回表，效率很低，所以我们最终选择的索引是idx_key1</p>
+<hr>
+<h3 id="知识点：索引合并"><a href="#知识点：索引合并" class="headerlink" title="知识点：索引合并"></a>知识点：索引合并</h3><p><strong>Intersection合并</strong>：<br>并不是所有的查询都只能使用一个二级索引，在以下特殊情况时会使用Intersection合并，即多个二级索引</p>
+<ul>
+<li>情况一：二级索引列是等值匹配的情况，对于联合索引来说，在联合索引中的每个列都必须等值匹配，不能出现只匹配部分列的情况。</li>
+<li>情况二：主键列可以是范围匹配</li>
+</ul>
+<p><strong>Union合并</strong>：</p>
+<ul>
+<li>情况一：二级索引列是等值匹配的情况，对于联合索引来说，在联合索引中的每个列都必须等值匹配，不能出现只出现匹配部分列的情况。</li>
+<li>情况二：主键列可以是范围匹配</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/05/27/%E5%8D%95%E8%A1%A8%E6%9F%A5%E8%AF%A2/" data-id="cli65oe410000bgwo058yaryy" data-title="单表查询" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/innodb/" rel="tag">innodb</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-innodb中区、段的概念" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/05/27/innodb%E4%B8%AD%E5%8C%BA%E3%80%81%E6%AE%B5%E7%9A%84%E6%A6%82%E5%BF%B5/" class="article-date">
@@ -416,6 +492,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2023/05/27/%E5%8D%95%E8%A1%A8%E6%9F%A5%E8%AF%A2/">单表查询</a>
+          </li>
         
           <li>
             <a href="/2023/05/27/innodb%E4%B8%AD%E5%8C%BA%E3%80%81%E6%AE%B5%E7%9A%84%E6%A6%82%E5%BF%B5/">innodb中区、段的概念</a>
