@@ -1,109 +1,90 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  
-  
-  <title>innodb行记录、数据组织形式 | Hexo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="2023-05-131. innodb页页是什么？为什么要有页的概念？概念：页是innodb中磁盘和内存交互的基本单位，默认大小是16K。意义：innodb是把数据存储在硬盘上的，但是在处理数据的时候却是在内存中的，如果在处理数据的时候把数据一条条数据的加载到内存或者写入到磁盘，那么就会导致innodb的读写效率十分的低，所以有了页的概念，可以使innodb一次性读出或写入多条数据 2. inno">
-<meta property="og:type" content="article">
-<meta property="og:title" content="innodb行记录、数据组织形式">
-<meta property="og:url" content="http://example.com/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/index.html">
-<meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="2023-05-131. innodb页页是什么？为什么要有页的概念？概念：页是innodb中磁盘和内存交互的基本单位，默认大小是16K。意义：innodb是把数据存储在硬盘上的，但是在处理数据的时候却是在内存中的，如果在处理数据的时候把数据一条条数据的加载到内存或者写入到磁盘，那么就会导致innodb的读写效率十分的低，所以有了页的概念，可以使innodb一次性读出或写入多条数据 2. inno">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/3/12/169710e8fafc21aa~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp#id=VCu7e&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=">
-<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683988033454-bb8be8e5-662d-4a59-a379-4ca750184bfb.webp#averageHue=%23f7ebe3&clientId=ufe91ca8b-3712-4&from=paste&id=u9b1d8b97&originHeight=250&originWidth=783&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u69c9a56d-974f-47b7-9990-38003b063ee&title=">
-<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/3/12/169710e99a69ba3d~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp#id=HHzFP&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=">
-<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683988046339-97b714bb-322c-474e-bd52-2a3bd78ad2e0.webp#averageHue=%23f6e9e0&clientId=ufe91ca8b-3712-4&from=paste&id=u94dd4dd6&originHeight=251&originWidth=618&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u6136e7ba-0f4d-4590-b6a7-4c16f29317b&title=">
-<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683987973550-662e738c-6bdc-40be-a50b-5cf33e606473.webp#averageHue=%23d1a145&clientId=ufe91ca8b-3712-4&from=paste&id=u4d9be615&originHeight=1072&originWidth=934&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uca58be8c-ef5c-444a-8d58-4ba98f71eba&title=">
-<meta property="article:published_time" content="2023-05-21T15:31:03.000Z">
-<meta property="article:modified_time" content="2023-05-27T14:17:02.490Z">
-<meta property="article:author" content="John Doe">
-<meta property="article:tag" content="innodb">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/3/12/169710e8fafc21aa~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp#id=VCu7e&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=">
-  
-    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
-  
-  
-    <link rel="shortcut icon" href="/favicon.png">
-  
-  
-    
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0,  viewport-fit=cover" name="viewport" />
+    <meta name="description" content="innodb行记录、数据组织形式" />
+    <link rel="alternate icon" type="image/webp" href="/img/favicon.webp">
+    <title>Hexo | </title>
 
-  
-  
+    
+        
+            
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/reset.css">
+
+            
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/markdown.css">
+
+            
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/fonts.css">
+ 
+            <!--注意：首页既不是post也不是page-->
+            
+        
+    
+    
+<link rel="stylesheet" href="/css/ui.css">
+ 
+    
 <link rel="stylesheet" href="/css/style.css">
 
-  
-    
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
-
-  
-  
 <meta name="generator" content="Hexo 6.3.0"></head>
-
-<body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">Hexo</a>
-      </h1>
-      
+    
+    <body>
+        <div class="paper">
+            
+            
+            
+            
+                <div class="shadow-drop-2-bottom paper-main">
+                    
+<div class="header">
+    <div class="header-container">
+        <img style="
+        width: 56px;
+        height: auto;" alt="^-^" cache-control="max-age=86400" class="header-img" src="/img/favicon.webp" width="10%"></img>
+        <div class="header-content">
+            <a class="logo" href="/">Hexo</a> 
+            <span class="description"></span> 
+        </div>
+        
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+    
+   
+    <ul class="nav">
         
-          <a class="main-nav-link" href="/">Home</a>
+            
+                <li><a href="/">首页</a></li>
+            
         
-          <a class="main-nav-link" href="/archives">Archives</a>
+            
+                <li><a href="/list/">文章</a></li>
+            
         
-      </nav>
-      <nav id="sub-nav">
+    </ul>
+</div> 
         
-        
-          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
-        
-        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
-      </div>
-    </div>
-  </div>
-</header>
+                    
+                    
 
-      <div class="outer">
-        <section id="main"><article id="post-innodb行记录、数据组织形式" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/" class="article-date">
-  <time class="dt-published" datetime="2023-05-21T15:31:03.000Z" itemprop="datePublished">2023-05-21</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="p-name article-title" itemprop="headline name">
-      innodb行记录、数据组织形式
-    </h1>
-  
+                    
+                    
+                    
+                    <!--说明是文章post页面-->
+                    
+                        <div class="post-main">
 
-      </header>
     
-    <div class="e-content article-entry" itemprop="articleBody">
+        <div class="post-main-title">
+            innodb行记录、数据组织形式
+        </div>
       
+    
+
+    <div class="post-md">
+        
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2023-05-13"><span class="post-toc-text">2023-05-13</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1-innodb%E9%A1%B5"><span class="post-toc-text">1. innodb页</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E9%A1%B5%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%9C%89%E9%A1%B5%E7%9A%84%E6%A6%82%E5%BF%B5%EF%BC%9F"><span class="post-toc-text">页是什么？为什么要有页的概念？</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-innodb%E9%A1%B5%E7%9A%84%E7%BB%93%E6%9E%84"><span class="post-toc-text">2. innodb页的结构</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E5%9C%A8%E8%AE%B2%E9%A1%B5%E7%9A%84%E7%BB%93%E6%9E%84%E4%B9%8B%E5%89%8D%EF%BC%8C%E9%9C%80%E8%A6%81%E5%85%88%E4%BA%86%E8%A7%A3innodb%E4%B8%AD%E6%95%B0%E6%8D%AE%E7%9A%84%E2%80%9C%E8%A1%8C%E6%A0%BC%E5%BC%8F%E2%80%9D"><span class="post-toc-text">在讲页的结构之前，需要先了解innodb中数据的“行格式”</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#innodb%E7%9A%84%E9%A1%B5%E7%BB%93%E6%9E%84"><span class="post-toc-text">innodb的页结构</span></a></li></ol></li></ol></li></ol>
+        
         <h2 id="2023-05-13"><a href="#2023-05-13" class="headerlink" title="2023-05-13"></a>2023-05-13</h2><h3 id="1-innodb页"><a href="#1-innodb页" class="headerlink" title="1. innodb页"></a>1. innodb页</h3><h4 id="页是什么？为什么要有页的概念？"><a href="#页是什么？为什么要有页的概念？" class="headerlink" title="页是什么？为什么要有页的概念？"></a>页是什么？为什么要有页的概念？</h4><p>概念：页是innodb中磁盘和内存交互的基本单位，默认大小是16K。<br>意义：innodb是把数据存储在硬盘上的，但是在处理数据的时候却是在内存中的，如果在处理数据的时候把数据一条条数据的加载到内存或者写入到磁盘，那么就会导致innodb的读写效率十分的低，所以有了页的概念，可以使innodb一次性读出或写入多条数据</p>
 <h3 id="2-innodb页的结构"><a href="#2-innodb页的结构" class="headerlink" title="2. innodb页的结构"></a>2. innodb页的结构</h3><h4 id="在讲页的结构之前，需要先了解innodb中数据的“行格式”"><a href="#在讲页的结构之前，需要先了解innodb中数据的“行格式”" class="headerlink" title="在讲页的结构之前，需要先了解innodb中数据的“行格式”"></a>在讲页的结构之前，需要先了解innodb中数据的“行格式”</h4><p>数据是以记录的形式存储在磁盘中的，那么数据是如何组织起来进行存放的呢？“行格式”就是规定了数据如何存放的一个协议，所以“行格式”也称为“记录格式”</p>
 <ul>
@@ -176,150 +157,80 @@
 <li>FIL_PAGE_ARCH_LOG_NO_OR_SPACE_ID：页属于哪个表空间</li>
 </ul>
 
-      
     </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/" data-id="clhz0446o0001ngwo3p28chq0" data-title="innodb行记录、数据组织形式" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/innodb/" rel="tag">innodb</a></li></ul>
 
-    </footer>
-  </div>
-  
+    <div class="post-meta">
+        <i>
+        
+            <span>2023-05-21</span>
+            
+                <span>该篇文章被 John Doe</span>
+            
+            
+                <span>打上标签:
+                    
+                    
+                        <a href='/tags/innodb/'>
+                            innodb
+                        </a>
+                    
+                </span>
+             
+             
+        
+        </i>
+    </div>
     
-<nav id="article-nav">
-  
-    <a href="/2023/05/21/innodb-B-%E6%A0%91/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
         
-          innodb B+树
-        
-      </div>
-    </a>
-  
-  
-    <a href="/2023/05/21/LT%E5%90%AF%E5%8A%A8/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">LT启动</div>
-    </a>
-  
-</nav>
 
-  
-</article>
+     
+</div>
 
 
-</section>
-        
-          <aside id="sidebar">
-  
+
+                    
+                    
+                    <div class="footer">
     
+        <span> 
+            © 1949-2023 China 
 
-  
+            
+                
+
+            
+        </span>
     
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/innodb/" rel="tag">innodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/learn-with-gh/" rel="tag">learn with gh</a></li></ul>
-    </div>
-  </div>
-
-
-  
+</div>
+<!--这是指一条线往下的内容-->
+<div class="footer-last">
     
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/innodb/" style="font-size: 20px;">innodb</a> <a href="/tags/learn-with-gh/" style="font-size: 10px;">learn with gh</a>
-    </div>
-  </div>
-
-  
+            <span>🌊看过大海的人不会忘记海的广阔🌊</span>
+            
+                <span class="footer-last-span-right"><i>本站由<a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/index.html">Hexo</a>驱动｜使用<a target="_blank" rel="noopener" href="https://github.com/HiNinoJay/hexo-theme-A4">Hexo-theme-A4</a>主题</i></span>
+            
     
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li></ul>
-    </div>
-  </div>
+</div>
 
 
-  
     
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
         
-          <li>
-            <a href="/2023/05/27/%E5%8D%95%E8%A1%A8%E6%9F%A5%E8%AF%A2/">单表查询</a>
-          </li>
-        
-          <li>
-            <a href="/2023/05/27/innodb%E4%B8%AD%E5%8C%BA%E3%80%81%E6%AE%B5%E7%9A%84%E6%A6%82%E5%BF%B5/">innodb中区、段的概念</a>
-          </li>
-        
-          <li>
-            <a href="/2023/05/21/innodb-B-%E6%A0%91/">innodb B+树</a>
-          </li>
-        
-          <li>
-            <a href="/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/">innodb行记录、数据组织形式</a>
-          </li>
-        
-          <li>
-            <a href="/2023/05/21/LT%E5%90%AF%E5%8A%A8/">LT启动</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/a11y-dark.min.css">
 
-  
-</aside>
         
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      
-      &copy; 2023 John Doe<br>
-      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
-    </div>
-  </div>
-</footer>
+<script src="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/js/highlight.min.js"></script>
 
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
+        
+<script src="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/js/highlightjs-line-numbers.js"></script>
+
     
 
 
-<script src="/js/jquery-3.6.4.min.js"></script>
-
-
-
-  
-<script src="/fancybox/jquery.fancybox.min.js"></script>
-
-
-
-
-<script src="/js/script.js"></script>
-
-
-
-
-
-  </div>
-</body>
+<script>
+    hljs.initHighlightingOnLoad();
+    hljs.initLineNumbersOnLoad();
+</script>
+                </div>
+            
+    </body>
 </html>

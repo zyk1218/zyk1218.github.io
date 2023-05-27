@@ -1,110 +1,90 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  
-  
-  <title>innodb B+树 | Hexo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Q：为什么要有索引？当没有索引的时候如何查找数据？如果查询条件是主键的话，我们可以遍历页目录，使用二分法定位到数据，但如果我们的查询条件不是主键时，那么我们的页目录就用不上了，我们只能遍历所有的页，当数据量十分庞大的时候，查询效率十分低下。 Q：B+树的索引是怎么构建起来的？有什么依据吗？B+树长什么样？最后一层存放用户记录，称为叶子节点；除最后一层外的节点用于存放目录项，均称为非叶子节点通常一颗">
-<meta property="og:type" content="article">
-<meta property="og:title" content="innodb B+树">
-<meta property="og:url" content="http://example.com/2023/05/21/innodb-B-%E6%A0%91/index.html">
-<meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="Q：为什么要有索引？当没有索引的时候如何查找数据？如果查询条件是主键的话，我们可以遍历页目录，使用二分法定位到数据，但如果我们的查询条件不是主键时，那么我们的页目录就用不上了，我们只能遍历所有的页，当数据量十分庞大的时候，查询效率十分低下。 Q：B+树的索引是怎么构建起来的？有什么依据吗？B+树长什么样？最后一层存放用户记录，称为叶子节点；除最后一层外的节点用于存放目录项，均称为非叶子节点通常一颗">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684643956609-c3229eee-6604-4e3a-bf2d-c5a5345b690f.webp#averageHue=%23fafafa&clientId=ub80ad07d-5015-4&from=paste&height=259&id=u106499cb&originHeight=533&originWidth=1136&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=ue18ed32b-2a5d-4445-9dad-b7d998ad523&title=&width=552">
-<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644377829-352501d6-31a6-4561-8c6c-8e44dfcfa193.webp#averageHue=%23fbf9f8&clientId=ub80ad07d-5015-4&from=paste&height=327&id=u937c3eb8&originHeight=517&originWidth=969&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u3732a373-61eb-48af-86b6-536f5927088&title=&width=613">
-<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644431101-95f12f13-f341-4b5f-8d23-286611eff938.webp#averageHue=%23f9f3ef&clientId=ub80ad07d-5015-4&from=paste&height=335&id=u524efe8b&originHeight=573&originWidth=1098&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uae958545-9bf4-413f-b629-36473b9c9f2&title=&width=641">
-<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644615412-32ed3b18-6e7c-4833-85fc-d124a7ea6c71.webp#averageHue=%23e0dbc8&clientId=ub80ad07d-5015-4&from=paste&id=u81b2073b&originHeight=535&originWidth=1178&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uca9382fe-7512-4d18-8553-d7160babe80&title=">
-<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644781592-c0206e12-e81d-4a24-a3d2-a90c91e0529c.webp#averageHue=%23dde0cc&clientId=ub80ad07d-5015-4&from=paste&id=u72070dbd&originHeight=579&originWidth=1080&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uc2db5312-77c7-4aa7-93c5-f6f3407b65f&title=">
-<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684646099890-88cd0a99-b2f8-4d89-a67c-7e101aab5079.webp#averageHue=%23e1e2d0&clientId=ub80ad07d-5015-4&from=paste&id=u25b15658&originHeight=617&originWidth=1153&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u90dcb8e7-7d14-44f9-9c70-6f36b11f7e7&title=">
-<meta property="article:published_time" content="2023-05-21T15:31:43.000Z">
-<meta property="article:modified_time" content="2023-05-27T14:17:13.419Z">
-<meta property="article:author" content="John Doe">
-<meta property="article:tag" content="innodb">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684643956609-c3229eee-6604-4e3a-bf2d-c5a5345b690f.webp#averageHue=%23fafafa&clientId=ub80ad07d-5015-4&from=paste&height=259&id=u106499cb&originHeight=533&originWidth=1136&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=ue18ed32b-2a5d-4445-9dad-b7d998ad523&title=&width=552">
-  
-    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
-  
-  
-    <link rel="shortcut icon" href="/favicon.png">
-  
-  
-    
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0,  viewport-fit=cover" name="viewport" />
+    <meta name="description" content="innodb B+树" />
+    <link rel="alternate icon" type="image/webp" href="/img/favicon.webp">
+    <title>Hexo | </title>
 
-  
-  
+    
+        
+            
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/reset.css">
+
+            
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/markdown.css">
+
+            
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/fonts.css">
+ 
+            <!--注意：首页既不是post也不是page-->
+            
+        
+    
+    
+<link rel="stylesheet" href="/css/ui.css">
+ 
+    
 <link rel="stylesheet" href="/css/style.css">
 
-  
-    
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
-
-  
-  
 <meta name="generator" content="Hexo 6.3.0"></head>
-
-<body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">Hexo</a>
-      </h1>
-      
+    
+    <body>
+        <div class="paper">
+            
+            
+            
+            
+                <div class="shadow-drop-2-bottom paper-main">
+                    
+<div class="header">
+    <div class="header-container">
+        <img style="
+        width: 56px;
+        height: auto;" alt="^-^" cache-control="max-age=86400" class="header-img" src="/img/favicon.webp" width="10%"></img>
+        <div class="header-content">
+            <a class="logo" href="/">Hexo</a> 
+            <span class="description"></span> 
+        </div>
+        
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+    
+   
+    <ul class="nav">
         
-          <a class="main-nav-link" href="/">Home</a>
+            
+                <li><a href="/">首页</a></li>
+            
         
-          <a class="main-nav-link" href="/archives">Archives</a>
+            
+                <li><a href="/list/">文章</a></li>
+            
         
-      </nav>
-      <nav id="sub-nav">
+    </ul>
+</div> 
         
-        
-          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
-        
-        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
-      </div>
-    </div>
-  </div>
-</header>
+                    
+                    
 
-      <div class="outer">
-        <section id="main"><article id="post-innodb-B-树" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/05/21/innodb-B-%E6%A0%91/" class="article-date">
-  <time class="dt-published" datetime="2023-05-21T15:31:43.000Z" itemprop="datePublished">2023-05-21</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="p-name article-title" itemprop="headline name">
-      innodb B+树
-    </h1>
-  
+                    
+                    
+                    
+                    <!--说明是文章post页面-->
+                    
+                        <div class="post-main">
 
-      </header>
     
-    <div class="e-content article-entry" itemprop="articleBody">
+        <div class="post-main-title">
+            innodb B+树
+        </div>
       
+    
+
+    <div class="post-md">
+        
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Q%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%9C%89%E7%B4%A2%E5%BC%95%EF%BC%9F"><span class="post-toc-text">Q：为什么要有索引？</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E5%BD%93%E6%B2%A1%E6%9C%89%E7%B4%A2%E5%BC%95%E7%9A%84%E6%97%B6%E5%80%99%E5%A6%82%E4%BD%95%E6%9F%A5%E6%89%BE%E6%95%B0%E6%8D%AE%EF%BC%9F"><span class="post-toc-text">当没有索引的时候如何查找数据？</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Q%EF%BC%9AB-%E6%A0%91%E7%9A%84%E7%B4%A2%E5%BC%95%E6%98%AF%E6%80%8E%E4%B9%88%E6%9E%84%E5%BB%BA%E8%B5%B7%E6%9D%A5%E7%9A%84%EF%BC%9F%E6%9C%89%E4%BB%80%E4%B9%88%E4%BE%9D%E6%8D%AE%E5%90%97%EF%BC%9F"><span class="post-toc-text">Q：B+树的索引是怎么构建起来的？有什么依据吗？</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#B-%E6%A0%91%E9%95%BF%E4%BB%80%E4%B9%88%E6%A0%B7%EF%BC%9F"><span class="post-toc-text">B+树长什么样？</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#B-%E6%A0%91%E6%98%AF%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E8%B5%B7%E6%9D%A5%E7%9A%84%EF%BC%9F"><span class="post-toc-text">B+树是如何构建起来的？</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Q%EF%BC%9AB-%E6%A0%91%E6%9C%89%E4%BB%80%E4%B9%88%E7%89%B9%E7%82%B9%EF%BC%9F"><span class="post-toc-text">Q：B+树有什么特点？</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E4%BB%8E%E6%9E%84%E5%BB%BA%E8%BF%87%E7%A8%8B%E4%B8%AD%E6%80%BB%E7%BB%93%E5%87%BA%E6%9D%A5%E7%9A%84%E7%89%B9%E7%82%B9%EF%BC%9A"><span class="post-toc-text">从构建过程中总结出来的特点：</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#B-%E6%A0%91%E6%9C%AC%E8%BA%AB%E7%9A%84%E7%89%B9%E7%82%B9%EF%BC%9A"><span class="post-toc-text">B+树本身的特点：</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Q%EF%BC%9A%E9%99%A4%E8%81%9A%E7%B0%87%E7%B4%A2%E5%BC%95%E5%A4%96%EF%BC%8C%E8%BF%98%E6%9C%89%E5%88%AB%E7%9A%84%E7%B4%A2%E5%BC%95%E5%90%97%EF%BC%9F"><span class="post-toc-text">Q：除聚簇索引外，还有别的索引吗？</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95"><span class="post-toc-text">二级索引</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E8%81%94%E5%90%88%E7%B4%A2%E5%BC%95"><span class="post-toc-text">联合索引</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Q%EF%BC%9A%E5%9B%9E%E8%A1%A8%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="post-toc-text">Q：回表的代价</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B%E4%BC%9A%E5%9B%9E%E8%A1%A8%EF%BC%9F"><span class="post-toc-text">什么情况下会回表？</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E5%9B%9E%E8%A1%A8%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="post-toc-text">回表的影响</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E5%9B%9E%E8%A1%A8%EF%BC%9F"><span class="post-toc-text">如何避免回表？</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Q%EF%BC%9A%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8B-%E6%A0%91%E5%91%A2"><span class="post-toc-text">Q：如何使用B+树呢</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="post-toc-text">索引的代价</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="post-toc-text">索引的使用</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Q%EF%BC%9A%E5%A6%82%E4%BD%95%E6%8C%91%E9%80%89%E7%B4%A2%E5%BC%95"><span class="post-toc-text">Q：如何挑选索引</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link"><span class="post-toc-text"></span></a></li></ol>
+        
         <h3 id="Q：为什么要有索引？"><a href="#Q：为什么要有索引？" class="headerlink" title="Q：为什么要有索引？"></a>Q：为什么要有索引？</h3><h4 id="当没有索引的时候如何查找数据？"><a href="#当没有索引的时候如何查找数据？" class="headerlink" title="当没有索引的时候如何查找数据？"></a>当没有索引的时候如何查找数据？</h4><p>如果查询条件是主键的话，我们可以遍历页目录，使用二分法定位到数据，但如果我们的查询条件不是主键时，那么我们的页目录就用不上了，我们只能遍历所有的页，当数据量十分庞大的时候，查询效率十分低下。</p>
 <h3 id="Q：B-树的索引是怎么构建起来的？有什么依据吗？"><a href="#Q：B-树的索引是怎么构建起来的？有什么依据吗？" class="headerlink" title="Q：B+树的索引是怎么构建起来的？有什么依据吗？"></a>Q：B+树的索引是怎么构建起来的？有什么依据吗？</h3><h4 id="B-树长什么样？"><a href="#B-树长什么样？" class="headerlink" title="B+树长什么样？"></a>B+树长什么样？</h4><p><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684643956609-c3229eee-6604-4e3a-bf2d-c5a5345b690f.webp#averageHue=%23fafafa&clientId=ub80ad07d-5015-4&from=paste&height=259&id=u106499cb&originHeight=533&originWidth=1136&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=ue18ed32b-2a5d-4445-9dad-b7d998ad523&title=&width=552"><br>最后一层存放用户记录，称为<strong>叶子节点</strong>；<br>除最后一层外的节点用于存放目录项，均称为<strong>非叶子节点</strong><br>通常一颗B+树的层高不会超过4，原因见B+树的构建。</p>
 <h4 id="B-树是如何构建起来的？"><a href="#B-树是如何构建起来的？" class="headerlink" title="B+树是如何构建起来的？"></a>B+树是如何构建起来的？</h4><p>首先，我们每一个数据页中都会记录该数据页中用户记录最大主键值和最小主键值，如下：<br><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644377829-352501d6-31a6-4561-8c6c-8e44dfcfa193.webp#averageHue=%23fbf9f8&clientId=ub80ad07d-5015-4&from=paste&height=327&id=u937c3eb8&originHeight=517&originWidth=969&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u3732a373-61eb-48af-86b6-536f5927088&title=&width=613"><br>基于数据页中的最大记录和最小记录，我们可以针对数据页形成一个目录：<img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644431101-95f12f13-f341-4b5f-8d23-286611eff938.webp#averageHue=%23f9f3ef&clientId=ub80ad07d-5015-4&from=paste&height=335&id=u524efe8b&originHeight=573&originWidth=1098&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uae958545-9bf4-413f-b629-36473b9c9f2&title=&width=641"><br>上边的目录项就是数据页的目录，目录项中记录了对应数据页的最小值，而被目录项组织起来的数据页的主键值必须是依次递增了，也就是说目录项2中所有记录的主键值肯定是要大于目录项1中所有记录的主键值的。<br>之后，为了使数据页的目录更灵活，MySQL的设计者将这些目录信息存储到了“页”中，存储这些目录信息的页也被称为“<strong>索引页</strong>”，效果如下：<br><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644615412-32ed3b18-6e7c-4833-85fc-d124a7ea6c71.webp#averageHue=%23e0dbc8&clientId=ub80ad07d-5015-4&from=paste&id=u81b2073b&originHeight=535&originWidth=1178&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uca9382fe-7512-4d18-8553-d7160babe80&title="><br>索引页中的记录有一个特点，就是它们头信息中的record_type为1，代表它们是目录项记录，而我们的普通记录对应的record_type是0。<br>当我们的数据页特别多的时候，我们需要用来记录页的目录项页就特别多了，那目录页多起来了后，我们为了提高检索效率，还得对目录项页整理目录，如下图：<img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644781592-c0206e12-e81d-4a24-a3d2-a90c91e0529c.webp#averageHue=%23dde0cc&clientId=ub80ad07d-5015-4&from=paste&id=u72070dbd&originHeight=579&originWidth=1080&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uc2db5312-77c7-4aa7-93c5-f6f3407b65f&title="><br>那么到这里，我们的“树”已经呼之欲出了，这就是“B+”树的形成过程。<br>这里我们做一个简单计算，来说明为什么B+树不可能超过4层：<br>假设目录项页中可以记录的记录条数为1000，一个数据页中能记录的用户记录为100条，那4层B+树总共可以记录的信息有：1000<em>1000</em>1000*100&#x3D;1000亿条。我们正常一张表是不可能记录这么多数据的。</p>
@@ -148,150 +128,80 @@
 <li>索引字符串列的前缀</li>
 </ol>
 <h3 id=""><a href="#" class="headerlink" title=""></a></h3>
-      
     </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/05/21/innodb-B-%E6%A0%91/" data-id="clhz0446q0002ngwohm0tfh4b" data-title="innodb B+树" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/innodb/" rel="tag">innodb</a></li></ul>
 
-    </footer>
-  </div>
-  
+    <div class="post-meta">
+        <i>
+        
+            <span>2023-05-21</span>
+            
+                <span>该篇文章被 John Doe</span>
+            
+            
+                <span>打上标签:
+                    
+                    
+                        <a href='/tags/innodb/'>
+                            innodb
+                        </a>
+                    
+                </span>
+             
+             
+        
+        </i>
+    </div>
     
-<nav id="article-nav">
-  
-    <a href="/2023/05/27/innodb%E4%B8%AD%E5%8C%BA%E3%80%81%E6%AE%B5%E7%9A%84%E6%A6%82%E5%BF%B5/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
         
-          innodb中区、段的概念
-        
-      </div>
-    </a>
-  
-  
-    <a href="/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">innodb行记录、数据组织形式</div>
-    </a>
-  
-</nav>
 
-  
-</article>
+     
+</div>
 
 
-</section>
-        
-          <aside id="sidebar">
-  
+
+                    
+                    
+                    <div class="footer">
     
+        <span> 
+            © 1949-2023 China 
 
-  
+            
+                
+
+            
+        </span>
     
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/innodb/" rel="tag">innodb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/learn-with-gh/" rel="tag">learn with gh</a></li></ul>
-    </div>
-  </div>
-
-
-  
+</div>
+<!--这是指一条线往下的内容-->
+<div class="footer-last">
     
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/innodb/" style="font-size: 20px;">innodb</a> <a href="/tags/learn-with-gh/" style="font-size: 10px;">learn with gh</a>
-    </div>
-  </div>
-
-  
+            <span>🌊看过大海的人不会忘记海的广阔🌊</span>
+            
+                <span class="footer-last-span-right"><i>本站由<a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/index.html">Hexo</a>驱动｜使用<a target="_blank" rel="noopener" href="https://github.com/HiNinoJay/hexo-theme-A4">Hexo-theme-A4</a>主题</i></span>
+            
     
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li></ul>
-    </div>
-  </div>
+</div>
 
 
-  
     
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
         
-          <li>
-            <a href="/2023/05/27/%E5%8D%95%E8%A1%A8%E6%9F%A5%E8%AF%A2/">单表查询</a>
-          </li>
-        
-          <li>
-            <a href="/2023/05/27/innodb%E4%B8%AD%E5%8C%BA%E3%80%81%E6%AE%B5%E7%9A%84%E6%A6%82%E5%BF%B5/">innodb中区、段的概念</a>
-          </li>
-        
-          <li>
-            <a href="/2023/05/21/innodb-B-%E6%A0%91/">innodb B+树</a>
-          </li>
-        
-          <li>
-            <a href="/2023/05/21/innodb%E8%A1%8C%E8%AE%B0%E5%BD%95%E3%80%81%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E5%BD%A2%E5%BC%8F/">innodb行记录、数据组织形式</a>
-          </li>
-        
-          <li>
-            <a href="/2023/05/21/LT%E5%90%AF%E5%8A%A8/">LT启动</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/a11y-dark.min.css">
 
-  
-</aside>
         
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      
-      &copy; 2023 John Doe<br>
-      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
-    </div>
-  </div>
-</footer>
+<script src="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/js/highlight.min.js"></script>
 
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
+        
+<script src="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/js/highlightjs-line-numbers.js"></script>
+
     
 
 
-<script src="/js/jquery-3.6.4.min.js"></script>
-
-
-
-  
-<script src="/fancybox/jquery.fancybox.min.js"></script>
-
-
-
-
-<script src="/js/script.js"></script>
-
-
-
-
-
-  </div>
-</body>
+<script>
+    hljs.initHighlightingOnLoad();
+    hljs.initLineNumbersOnLoad();
+</script>
+                </div>
+            
+    </body>
 </html>
