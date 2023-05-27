@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0,  viewport-fit=cover" name="viewport" />
     <meta name="description" content="" />
-    <link rel="alternate icon" type="image/webp" href="/img/favicon.webp">
-    <title>Hexo | </title>
+    <link rel="alternate icon" type="image/webp" href="/img/favi.png">
+    <title>remember | 学习记录</title>
 
     
         
@@ -41,13 +41,13 @@
 
 
     <div class="index-header-line" >
-        <span>看过大海的人不会忘记海的广阔</span>
+        <span>无负今日</span>
     </div>
 
 
     <div style="text-align: left;">
 
-        <a class="index-logo" href="/">Hexo</a>
+        <a class="index-logo" href="/">remember</a>
         <div style="margin-bottom: 12px;"> 
             首页
             
@@ -57,6 +57,8 @@
                     &nbsp / &nbsp<a href="/list/">文章</a>
                 
             
+                
+            
         </div>
     </div>
 
@@ -64,50 +66,21 @@
     
     
        
+       
             <div class="post-md">
-                <h3 id="Q：为什么要有索引？"><a href="#Q：为什么要有索引？" class="headerlink" title="Q：为什么要有索引？"></a>Q：为什么要有索引？</h3><h4 id="当没有索引的时候如何查找数据？"><a href="#当没有索引的时候如何查找数据？" class="headerlink" title="当没有索引的时候如何查找数据？"></a>当没有索引的时候如何查找数据？</h4><p>如果查询条件是主键的话，我们可以遍历页目录，使用二分法定位到数据，但如果我们的查询条件不是主键时，那么我们的页目录就用不上了，我们只能遍历所有的页，当数据量十分庞大的时候，查询效率十分低下。</p>
-<h3 id="Q：B-树的索引是怎么构建起来的？有什么依据吗？"><a href="#Q：B-树的索引是怎么构建起来的？有什么依据吗？" class="headerlink" title="Q：B+树的索引是怎么构建起来的？有什么依据吗？"></a>Q：B+树的索引是怎么构建起来的？有什么依据吗？</h3><h4 id="B-树长什么样？"><a href="#B-树长什么样？" class="headerlink" title="B+树长什么样？"></a>B+树长什么样？</h4><p><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684643956609-c3229eee-6604-4e3a-bf2d-c5a5345b690f.webp#averageHue=%23fafafa&clientId=ub80ad07d-5015-4&from=paste&height=259&id=u106499cb&originHeight=533&originWidth=1136&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=ue18ed32b-2a5d-4445-9dad-b7d998ad523&title=&width=552"><br>最后一层存放用户记录，称为<strong>叶子节点</strong>；<br>除最后一层外的节点用于存放目录项，均称为<strong>非叶子节点</strong><br>通常一颗B+树的层高不会超过4，原因见B+树的构建。</p>
-<h4 id="B-树是如何构建起来的？"><a href="#B-树是如何构建起来的？" class="headerlink" title="B+树是如何构建起来的？"></a>B+树是如何构建起来的？</h4><p>首先，我们每一个数据页中都会记录该数据页中用户记录最大主键值和最小主键值，如下：<br><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644377829-352501d6-31a6-4561-8c6c-8e44dfcfa193.webp#averageHue=%23fbf9f8&clientId=ub80ad07d-5015-4&from=paste&height=327&id=u937c3eb8&originHeight=517&originWidth=969&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u3732a373-61eb-48af-86b6-536f5927088&title=&width=613"><br>基于数据页中的最大记录和最小记录，我们可以针对数据页形成一个目录：<img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644431101-95f12f13-f341-4b5f-8d23-286611eff938.webp#averageHue=%23f9f3ef&clientId=ub80ad07d-5015-4&from=paste&height=335&id=u524efe8b&originHeight=573&originWidth=1098&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uae958545-9bf4-413f-b629-36473b9c9f2&title=&width=641"><br>上边的目录项就是数据页的目录，目录项中记录了对应数据页的最小值，而被目录项组织起来的数据页的主键值必须是依次递增了，也就是说目录项2中所有记录的主键值肯定是要大于目录项1中所有记录的主键值的。<br>之后，为了使数据页的目录更灵活，MySQL的设计者将这些目录信息存储到了“页”中，存储这些目录信息的页也被称为“<strong>索引页</strong>”，效果如下：<br><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644615412-32ed3b18-6e7c-4833-85fc-d124a7ea6c71.webp#averageHue=%23e0dbc8&clientId=ub80ad07d-5015-4&from=paste&id=u81b2073b&originHeight=535&originWidth=1178&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uca9382fe-7512-4d18-8553-d7160babe80&title="><br>索引页中的记录有一个特点，就是它们头信息中的record_type为1，代表它们是目录项记录，而我们的普通记录对应的record_type是0。<br>当我们的数据页特别多的时候，我们需要用来记录页的目录项页就特别多了，那目录页多起来了后，我们为了提高检索效率，还得对目录项页整理目录，如下图：<img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644781592-c0206e12-e81d-4a24-a3d2-a90c91e0529c.webp#averageHue=%23dde0cc&clientId=ub80ad07d-5015-4&from=paste&id=u72070dbd&originHeight=579&originWidth=1080&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uc2db5312-77c7-4aa7-93c5-f6f3407b65f&title="><br>那么到这里，我们的“树”已经呼之欲出了，这就是“B+”树的形成过程。<br>这里我们做一个简单计算，来说明为什么B+树不可能超过4层：<br>假设目录项页中可以记录的记录条数为1000，一个数据页中能记录的用户记录为100条，那4层B+树总共可以记录的信息有：1000<em>1000</em>1000*100&#x3D;1000亿条。我们正常一张表是不可能记录这么多数据的。</p>
-<h3 id="Q：B-树有什么特点？"><a href="#Q：B-树有什么特点？" class="headerlink" title="Q：B+树有什么特点？"></a>Q：B+树有什么特点？</h3><h4 id="从构建过程中总结出来的特点："><a href="#从构建过程中总结出来的特点：" class="headerlink" title="从构建过程中总结出来的特点："></a>从构建过程中总结出来的特点：</h4><ol>
-<li>定位一条数据，最多只需要关注4个页，分别是三个目录页，一个数据页</li>
-<li>无论是数据页还是索引页，页和页之间在物理上都不是连续的，而是通过偏移量形成了一个双向链表</li>
-</ol>
-<h4 id="B-树本身的特点："><a href="#B-树本身的特点：" class="headerlink" title="B+树本身的特点："></a>B+树本身的特点：</h4><p>上边描述的B+树我们称之为聚簇索引，因为叶子节点上存储了完整的用户记录，索引即记录。</p>
-<h3 id="Q：除聚簇索引外，还有别的索引吗？"><a href="#Q：除聚簇索引外，还有别的索引吗？" class="headerlink" title="Q：除聚簇索引外，还有别的索引吗？"></a>Q：除聚簇索引外，还有别的索引吗？</h3><h4 id="二级索引"><a href="#二级索引" class="headerlink" title="二级索引"></a>二级索引</h4><p>我们上边描述的索引是基于主键生成的聚簇索引，我们在使用主键检索数据时，该索引效率很高，但是当我们使用非主键进行查找时，该索引就无法使用了，那么为了提高非主键查询时的查询效率，我们可以针对非主键字段建立索引，此类索引称为“二级索引”。<br><strong>二级索引的特点：</strong></p>
-<ol>
-<li>叶子节点不存储记录所有列的信息，只存储索引对应列的值和主键值</li>
-<li>当需要获取其他字段值时，需要拿着主键回表查询</li>
-</ol>
-<h4 id="联合索引"><a href="#联合索引" class="headerlink" title="联合索引"></a>联合索引</h4><p>针对多个列建立索引，假如我们对c1和c2列建立联合索引，我们会先根据c1进行排序，当c1值相同时，我们再对c2进行排序。效果图如下：<br><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684646099890-88cd0a99-b2f8-4d89-a67c-7e101aab5079.webp#averageHue=%23e1e2d0&clientId=ub80ad07d-5015-4&from=paste&id=u25b15658&originHeight=617&originWidth=1153&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u90dcb8e7-7d14-44f9-9c70-6f36b11f7e7&title="></p>
-<h3 id="Q：回表的代价"><a href="#Q：回表的代价" class="headerlink" title="Q：回表的代价"></a>Q：回表的代价</h3><h4 id="什么情况下会回表？"><a href="#什么情况下会回表？" class="headerlink" title="什么情况下会回表？"></a>什么情况下会回表？</h4><p>查询条件命中了二级索引，但是目标字段却不在二级索引中，此时就需要根据二级索引中记录的主键值回到聚簇索引中查询对应的记录值</p>
-<h4 id="回表的影响"><a href="#回表的影响" class="headerlink" title="回表的影响"></a>回表的影响</h4><p>回表是随机I&#x2F;O，通常顺序I&#x2F;O的性能是要由于随机I&#x2F;O的，当我们回表次数过多的时候，innodb优化器会选择进行全表扫描</p>
-<h4 id="如何避免回表？"><a href="#如何避免回表？" class="headerlink" title="如何避免回表？"></a>如何避免回表？</h4><ol>
-<li>尽可能地限制查询到的数据</li>
-<li>覆盖索引：我们查询的目标列最好是索引中的列</li>
-</ol>
-<h3 id="Q：如何使用B-树呢"><a href="#Q：如何使用B-树呢" class="headerlink" title="Q：如何使用B+树呢"></a>Q：如何使用B+树呢</h3><h4 id="索引的代价"><a href="#索引的代价" class="headerlink" title="索引的代价"></a>索引的代价</h4><p><strong>时间上的代价</strong>：每一次增删改的时候，我们都要维护对应的B+树<br><strong>空间上的代价</strong>：每建立一个索引，都会产生一颗B+树</p>
-<h4 id="索引的使用"><a href="#索引的使用" class="headerlink" title="索引的使用"></a>索引的使用</h4><p><strong>全值匹配</strong>：查询条件和列值完全匹配<br><strong>最左匹配</strong>：假设我们针对列a，b，c建立了联合索引idx_a_b_c：</p>
-<ol>
-<li>那么当我们使用条件a，b，c进行查询的时候会先匹配a相等的记录，然后再匹配b，最后是c；</li>
-<li>如果我们的查询条件是b，c，那就无法使用到该联合索引了；</li>
-<li>如果查询条件是a，c，那么只可以使用到a列的索引</li>
-</ol>
-<p><strong>匹配列前缀</strong>：B+树中对于字符串进行了排序，所以我们使用部分前缀也可以快速地定位到数据，例如</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select column A from table where A like &quot;As%&quot;</span><br></pre></td></tr></table></figure>
-<p>但是如果只给出中间或者末尾的某个字符，该索引就无法使用了，因为innodb并不会为某一列数据中间或末尾几个字符进行排序。<br><strong>范围查询</strong>：当使用范围查询时，只有联合索引做左边的列能够使用到<br><strong>精确匹配某一列并范围匹配另外一列</strong>：对于联合索引来说，如果可以精确匹配第一列，那么第二个条件可以范围匹配<br><strong>用于排序</strong>：通常当我们的sql中包含order by的时候，我们的做法是将数据load到内存中，在内存中对数据进行排序，当我们where条件名字的数据过多时，甚至还可能要使用到磁盘空间来完成排序，那么一但和磁盘沾边，那我们的查询效率就会很低了。但是如果我们的ordey by中使用索引字段来进行排序的话，我们就可以直接从索引里提取数据，再进行一次回表就可以的。<br><strong>不可以使用索引进行排序的情况：</strong></p>
-<ol>
-<li>ASC和DESC混用：因为我们的联合索引在创建的时候会根据A进行排序，A字段一样的记录再根据B字段进行排序，如果我们排序条件时A、B均升序，那么我们从索引最左边读10行就好，如果排序条件是A、B均降序，那么我们从索引最右边向左读10条就好，如果A增B减的话，我们需要先针对A增的情况挑选出10条数据，在根据B减的情况匹配出对应的十条，但是往往我们是无法精确匹配出10条B递减的数据的，于是我们又得重新在A增的情况下多拿出几条，这样会导致我们索引使用的效率特别低</li>
-<li>多个用于排序的列不属于同一个索引</li>
-<li>用于排序的列使用到了复杂表达式：当我们使用索引列进行排序时，必须保证该索引列是单独出现的，不能经过任何加工</li>
-</ol>
-<p><strong>用于分组</strong>：如果分组条件和我们索引字段一致的话，会提高分组sql语句的效率<br><strong>覆盖索引</strong>：我们查询的目标列最好是索引中的列</p>
-<h3 id="Q：如何挑选索引"><a href="#Q：如何挑选索引" class="headerlink" title="Q：如何挑选索引"></a>Q：如何挑选索引</h3><ol>
-<li>只为用于搜索、排序、分组的列创建索引</li>
-<li>考虑列的区分度，越高越值得建立索引</li>
-<li>索引列的类型尽可能地笑</li>
-<li>索引字符串列的前缀</li>
-</ol>
-<h3 id=""><a href="#" class="headerlink" title=""></a></h3>
+                <h3 id="交流时间：每周日15：00点"><a href="#交流时间：每周日15：00点" class="headerlink" title="交流时间：每周日15：00点"></a>交流时间：每周日15：00点</h3><h3 id="固定分享内容："><a href="#固定分享内容：" class="headerlink" title="固定分享内容："></a>固定分享内容：</h3><ul>
+<li>思考：需求、培训等工作中各种各样的思考，有趣的需求，受益的感悟···</li>
+<li>故障分享：自己遇到的线上线下问题、别的团队的线上事故等，是怎么发生的，是怎么解决的，有什么可以借鉴的经验</li>
+<li>业务理解：为对方讲解自己负责系统的功能、边界，自己对该系统的技术规划、业务的理解，表达清楚所以然</li>
+<li>新技术：偶然间读到的一篇博文、公众号推送等，总结出概要，讲清楚重点</li>
+</ul>
+<h3 id="指定分享内容："><a href="#指定分享内容：" class="headerlink" title="指定分享内容："></a>指定分享内容：</h3><ul>
+<li>innodb的数据组织、存储格式</li>
+</ul>
+<h3 id="todo"><a href="#todo" class="headerlink" title="todo:"></a>todo:</h3><ul>
+<li><input checked="" disabled="" type="checkbox"> 五月底完善各自的博客，后续的分享基于博客</li>
+</ul>
+
             </div>
     
 </div> 
@@ -120,7 +93,7 @@
          
             
                 
-                <span class="index-footer-last-span">Email:<a href="mailto:123456789@gmail.com" title="123456789@gmail.com">123456789@gmail.com</a></span>
+                <span class="index-footer-last-span">Email:<a href="mailto:1977293486@qq.com" title="1977293486@qq.com">1977293486@qq.com</a></span>
             
         
     
