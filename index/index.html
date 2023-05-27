@@ -3,7 +3,7 @@
     <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0,  viewport-fit=cover" name="viewport" />
-    <meta name="description" content="" />
+    <meta name="description" content="innodb B+树" />
     <link rel="alternate icon" type="image/webp" href="/img/favicon.webp">
     <title>Hexo | </title>
 
@@ -36,36 +36,49 @@
             
             
             
-                <div class="shadow-drop-2-bottom index-main">
-                    <!-- 这个header就是特指首页的header -->
-
-
-    <div class="index-header-line" >
-        <span>看过大海的人不会忘记海的广阔</span>
-    </div>
-
-
-    <div style="text-align: left;">
-
-        <a class="index-logo" href="/">Hexo</a>
-        <div style="margin-bottom: 12px;"> 
-            首页
-            
-                
-            
-                
-                    &nbsp / &nbsp<a href="/list/">文章</a>
-                
-            
+                <div class="shadow-drop-2-bottom paper-main">
+                    
+<div class="header">
+    <div class="header-container">
+        <img style="
+        width: 56px;
+        height: auto;" alt="^-^" cache-control="max-age=86400" class="header-img" src="/img/favicon.webp" width="10%"></img>
+        <div class="header-content">
+            <a class="logo" href="/">Hexo</a> 
+            <span class="description"></span> 
         </div>
+        
     </div>
+    
+   
+    <ul class="nav">
+        
+            
+                <li><a href="/">首页</a></li>
+            
+        
+            
+                <li><a href="/list/">文章</a></li>
+            
+        
+    </ul>
+</div> 
+        
+                    
+                    
 
-                    <div class="post-main">
+                    
+                    
+                    
+                    <!--说明是文章post页面-->
+                    
+                        <div class="post-main">
+
     
-    
-       
-            <div class="post-md">
-                <h3 id="Q：为什么要有索引？"><a href="#Q：为什么要有索引？" class="headerlink" title="Q：为什么要有索引？"></a>Q：为什么要有索引？</h3><h4 id="当没有索引的时候如何查找数据？"><a href="#当没有索引的时候如何查找数据？" class="headerlink" title="当没有索引的时候如何查找数据？"></a>当没有索引的时候如何查找数据？</h4><p>如果查询条件是主键的话，我们可以遍历页目录，使用二分法定位到数据，但如果我们的查询条件不是主键时，那么我们的页目录就用不上了，我们只能遍历所有的页，当数据量十分庞大的时候，查询效率十分低下。</p>
+
+    <div class="post-md">
+        
+        <h3 id="Q：为什么要有索引？"><a href="#Q：为什么要有索引？" class="headerlink" title="Q：为什么要有索引？"></a>Q：为什么要有索引？</h3><h4 id="当没有索引的时候如何查找数据？"><a href="#当没有索引的时候如何查找数据？" class="headerlink" title="当没有索引的时候如何查找数据？"></a>当没有索引的时候如何查找数据？</h4><p>如果查询条件是主键的话，我们可以遍历页目录，使用二分法定位到数据，但如果我们的查询条件不是主键时，那么我们的页目录就用不上了，我们只能遍历所有的页，当数据量十分庞大的时候，查询效率十分低下。</p>
 <h3 id="Q：B-树的索引是怎么构建起来的？有什么依据吗？"><a href="#Q：B-树的索引是怎么构建起来的？有什么依据吗？" class="headerlink" title="Q：B+树的索引是怎么构建起来的？有什么依据吗？"></a>Q：B+树的索引是怎么构建起来的？有什么依据吗？</h3><h4 id="B-树长什么样？"><a href="#B-树长什么样？" class="headerlink" title="B+树长什么样？"></a>B+树长什么样？</h4><p><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684643956609-c3229eee-6604-4e3a-bf2d-c5a5345b690f.webp#averageHue=%23fafafa&clientId=ub80ad07d-5015-4&from=paste&height=259&id=u106499cb&originHeight=533&originWidth=1136&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=ue18ed32b-2a5d-4445-9dad-b7d998ad523&title=&width=552"><br>最后一层存放用户记录，称为<strong>叶子节点</strong>；<br>除最后一层外的节点用于存放目录项，均称为<strong>非叶子节点</strong><br>通常一颗B+树的层高不会超过4，原因见B+树的构建。</p>
 <h4 id="B-树是如何构建起来的？"><a href="#B-树是如何构建起来的？" class="headerlink" title="B+树是如何构建起来的？"></a>B+树是如何构建起来的？</h4><p>首先，我们每一个数据页中都会记录该数据页中用户记录最大主键值和最小主键值，如下：<br><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644377829-352501d6-31a6-4561-8c6c-8e44dfcfa193.webp#averageHue=%23fbf9f8&clientId=ub80ad07d-5015-4&from=paste&height=327&id=u937c3eb8&originHeight=517&originWidth=969&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u3732a373-61eb-48af-86b6-536f5927088&title=&width=613"><br>基于数据页中的最大记录和最小记录，我们可以针对数据页形成一个目录：<img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644431101-95f12f13-f341-4b5f-8d23-286611eff938.webp#averageHue=%23f9f3ef&clientId=ub80ad07d-5015-4&from=paste&height=335&id=u524efe8b&originHeight=573&originWidth=1098&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uae958545-9bf4-413f-b629-36473b9c9f2&title=&width=641"><br>上边的目录项就是数据页的目录，目录项中记录了对应数据页的最小值，而被目录项组织起来的数据页的主键值必须是依次递增了，也就是说目录项2中所有记录的主键值肯定是要大于目录项1中所有记录的主键值的。<br>之后，为了使数据页的目录更灵活，MySQL的设计者将这些目录信息存储到了“页”中，存储这些目录信息的页也被称为“<strong>索引页</strong>”，效果如下：<br><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644615412-32ed3b18-6e7c-4833-85fc-d124a7ea6c71.webp#averageHue=%23e0dbc8&clientId=ub80ad07d-5015-4&from=paste&id=u81b2073b&originHeight=535&originWidth=1178&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uca9382fe-7512-4d18-8553-d7160babe80&title="><br>索引页中的记录有一个特点，就是它们头信息中的record_type为1，代表它们是目录项记录，而我们的普通记录对应的record_type是0。<br>当我们的数据页特别多的时候，我们需要用来记录页的目录项页就特别多了，那目录页多起来了后，我们为了提高检索效率，还得对目录项页整理目录，如下图：<img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1684644781592-c0206e12-e81d-4a24-a3d2-a90c91e0529c.webp#averageHue=%23dde0cc&clientId=ub80ad07d-5015-4&from=paste&id=u72070dbd&originHeight=579&originWidth=1080&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uc2db5312-77c7-4aa7-93c5-f6f3407b65f&title="><br>那么到这里，我们的“树”已经呼之欲出了，这就是“B+”树的形成过程。<br>这里我们做一个简单计算，来说明为什么B+树不可能超过4层：<br>假设目录项页中可以记录的记录条数为1000，一个数据页中能记录的用户记录为100条，那4层B+树总共可以记录的信息有：1000<em>1000</em>1000*100&#x3D;1000亿条。我们正常一张表是不可能记录这么多数据的。</p>
 <h3 id="Q：B-树有什么特点？"><a href="#Q：B-树有什么特点？" class="headerlink" title="Q：B+树有什么特点？"></a>Q：B+树有什么特点？</h3><h4 id="从构建过程中总结出来的特点："><a href="#从构建过程中总结出来的特点：" class="headerlink" title="从构建过程中总结出来的特点："></a>从构建过程中总结出来的特点：</h4><ol>
@@ -108,21 +121,42 @@
 <li>索引字符串列的前缀</li>
 </ol>
 <h3 id=""><a href="#" class="headerlink" title=""></a></h3>
-            </div>
+    </div>
+
+    <div class="post-meta">
+        <i>
+        
+        </i>
+    </div>
     
-</div> 
+        
+
+     
+</div>
+
+
+
+                    
+                    
                     <div class="footer">
+    
+        <span> 
+            © 1949-2023 China 
+
+            
+                
+
+            
+        </span>
     
 </div>
 <!--这是指一条线往下的内容-->
 <div class="footer-last">
     
-         
+            <span>🌊看过大海的人不会忘记海的广阔🌊</span>
             
-                
-                <span class="index-footer-last-span">Email:<a href="mailto:123456789@gmail.com" title="123456789@gmail.com">123456789@gmail.com</a></span>
+                <span class="footer-last-span-right"><i>本站由<a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/index.html">Hexo</a>驱动｜使用<a target="_blank" rel="noopener" href="https://github.com/HiNinoJay/hexo-theme-A4">Hexo-theme-A4</a>主题</i></span>
             
-        
     
 </div>
 
