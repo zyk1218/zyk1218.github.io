@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0,  viewport-fit=cover" name="viewport" />
+    <meta name="description" content="联表查询" />
+    <link rel="alternate icon" type="image/webp" href="/img/favi.png">
+    <title>remember | 学习记录</title>
+
+    
+        
+            
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/reset.css">
+
+            
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/markdown.css">
+
+            
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/fonts.css">
+ 
+            <!--注意：首页既不是post也不是page-->
+            
+        
+    
+    
+<link rel="stylesheet" href="/css/ui.css">
+ 
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+    
+    <body>
+        <div class="paper">
+            
+            
+            
+            
+                <div class="shadow-drop-2-bottom paper-main">
+                    
+<div class="header">
+    <div class="header-container">
+        <img style="
+        width: 56px;
+        height: auto;" alt="^-^" cache-control="max-age=86400" class="header-img" src="/img/favicon.webp" width="10%"></img>
+        <div class="header-content">
+            <a class="logo" href="/">remember</a> 
+            <span class="description"></span> 
+        </div>
+        
+    </div>
+    
+   
+    <ul class="nav">
+        
+            
+                <li><a href="/">首页</a></li>
+            
+        
+            
+                <li><a href="/list/">文章</a></li>
+            
+        
+            
+                <li><a href="/categories/">分类</a></li>
+            
+        
+    </ul>
+</div> 
+        
+                    
+                    
+
+                    
+                    
+                    
+                    <!--说明是文章post页面-->
+                    
+                        <div class="post-main">
+
+    
+        <div class="post-main-title">
+            联表查询
+        </div>
+      
+    
+
+    <div class="post-md">
+        
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Q%EF%BC%9A%E8%81%94%E8%A1%A8%E6%9F%A5%E8%AF%A2%E4%B8%AD%E8%BF%9E%E6%8E%A5%E7%9A%84%E8%BF%87%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84"><span class="post-toc-text">Q：联表查询中连接的过程是怎样的</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Q%EF%BC%9A%E8%81%94%E8%A1%A8%E6%9F%A5%E8%AF%A2%E4%B8%AD%E7%9A%84%E8%BF%87%E6%BB%A4%E6%9D%A1%E4%BB%B6"><span class="post-toc-text">Q：联表查询中的过滤条件</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Q%EF%BC%9A%E8%81%94%E8%A1%A8%E6%9F%A5%E8%AF%A2%E4%B8%AD%E7%9A%84%E8%AE%BF%E9%97%AE%E6%96%B9%E5%BC%8F"><span class="post-toc-text">Q：联表查询中的访问方式</span></a></li></ol>
+        
+        <h3 id="Q：联表查询中连接的过程是怎样的"><a href="#Q：联表查询中连接的过程是怎样的" class="headerlink" title="Q：联表查询中连接的过程是怎样的"></a>Q：联表查询中连接的过程是怎样的</h3><p>假设，我们查询sql中使用的条件涉及两张表，类似<code>select * from table_a , table_b where table_a.cloumn_1 &gt; 1 and table_b.cloumn_1 &gt;1 </code>那么我们：</p>
+<ol>
+<li>首先确认第一张要使用的表，这张表称为驱动表，在本例中，<code>table_a</code>就是驱动表，我们先使用只与该表相关的条件进行单表查询</li>
+<li>之后我们根据单表查询的结果，访问<code>table_b</code>，这个时候<code>table_b</code>称为被驱动表</li>
+</ol>
+<p>在上述的过程中，驱动表只需要被访问一次，而被驱动表被访问的次数取决于第一次单表访问的结果集中的记录条数<br>此外，结合驱动表与被驱动表的概念，设计者们又定义了<code>左外连接</code>和<code>右外连接</code>，前者是说以左侧表为驱动表，后者是说以右侧表为驱动表。</p>
+<h3 id="Q：联表查询中的过滤条件"><a href="#Q：联表查询中的过滤条件" class="headerlink" title="Q：联表查询中的过滤条件"></a>Q：联表查询中的过滤条件</h3><p>首先，我们联表查询的过滤条件有两种，一个是<code>WHERE</code>子句过滤条件，一个是<code>ON</code>子句过滤条件；<br>接下来，我们说<strong>为什么要有不同的查询条件</strong><br>当我们使用内连接进行查询时，如果无法在被驱动表中查询到符合过滤条件的记录时，那么被驱动表中的记录就不会被添加到结果集中，但是有些情况下，我们却又想获取这类记录，所以就提出了<code>ON</code>子句过滤条件</p>
+<ul>
+<li><strong>WHERE子句过滤条件：</strong>不论是内连接还是外连接，如果无法匹配WHERE条件，对应记录不会被添加到结果集中</li>
+<li><strong>ON子句过滤条件：</strong>对于外连接的驱动表记录来说，即使无法在被驱动表中匹配到记录，也会在最终结果集中加入该记录，被驱动表字段以NULL表示</li>
+</ul>
+<p>通常情况下，我们把单表条件放在WHERE子句中，把多表条件放在ON子句中，ON子句中的过滤条件也称为<strong>连接条件</strong><br>:::danger<br>注意：ON子句条件只生效于外查询，内查询WHERE与ON等价<br>:::</p>
+<h3 id="Q：联表查询中的访问方式"><a href="#Q：联表查询中的访问方式" class="headerlink" title="Q：联表查询中的访问方式"></a>Q：联表查询中的访问方式</h3><ul>
+<li><strong>eq_ref：</strong>在被驱动表上使用主键或者唯一键进行查询的方式</li>
+</ul>
+
+    </div>
+
+    <div class="post-meta">
+        <i>
+        
+            <span>2023-05-28</span>
+            
+                <span>该篇文章被 John Doe</span>
+            
+            
+                <span>打上标签:
+                    
+                    
+                        <a href='/tags/innodb/'>
+                            innodb
+                        </a>
+                    
+                </span>
+             
+             
+        
+        </i>
+    </div>
+    
+        
+
+     
+</div>
+
+
+
+                    
+                    
+                    <div class="footer">
+    
+        <span> 
+            © 1949-2023 China 
+
+            
+                
+
+            
+        </span>
+    
+</div>
+<!--这是指一条线往下的内容-->
+<div class="footer-last">
+    
+            <span>无负今日</span>
+            
+                <span class="footer-last-span-right"><i>本站由<a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/index.html">Hexo</a>驱动｜使用<a target="_blank" rel="noopener" href="https://github.com/HiNinoJay/hexo-theme-A4">Hexo-theme-A4</a>主题</i></span>
+            
+    
+</div>
+
+
+    
+        
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/a11y-dark.min.css">
+
+        
+<script src="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/js/highlight.min.js"></script>
+
+        
+<script src="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/js/highlightjs-line-numbers.js"></script>
+
+    
+
+
+<script>
+    hljs.initHighlightingOnLoad();
+    hljs.initLineNumbersOnLoad();
+</script>
+                </div>
+            
+    </body>
+</html>
