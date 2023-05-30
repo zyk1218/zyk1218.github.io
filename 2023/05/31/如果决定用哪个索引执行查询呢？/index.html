@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0,  viewport-fit=cover" name="viewport" />
+    <meta name="description" content="如果决定用哪个索引执行查询呢？" />
+    <link rel="alternate icon" type="image/webp" href="/img/favi.png">
+    <title>remember | 学习记录</title>
+
+    
+        
+            
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/reset.css">
+
+            
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/markdown.css">
+
+            
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/fonts.css">
+ 
+            <!--注意：首页既不是post也不是page-->
+            
+        
+    
+    
+<link rel="stylesheet" href="/css/ui.css">
+ 
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+    
+    <body>
+        <div class="paper">
+            
+            
+            
+            
+                <div class="shadow-drop-2-bottom paper-main">
+                    
+<div class="header">
+    <div class="header-container">
+        <img style="
+        width: 56px;
+        height: auto;" alt="^-^" cache-control="max-age=86400" class="header-img" src="/img/favicon.webp" width="10%"></img>
+        <div class="header-content">
+            <a class="logo" href="/">remember</a> 
+            <span class="description"></span> 
+        </div>
+        
+    </div>
+    
+   
+    <ul class="nav">
+        
+            
+                <li><a href="/">首页</a></li>
+            
+        
+            
+                <li><a href="/list/">文章</a></li>
+            
+        
+            
+                <li><a href="/tags/">标签</a></li>
+            
+        
+    </ul>
+</div> 
+        
+                    
+                    
+
+                    
+                    
+                    
+                    <!--说明是文章post页面-->
+                    
+                        <div class="post-main">
+
+    
+        <div class="post-main-title">
+            如果决定用哪个索引执行查询呢？
+        </div>
+      
+    
+
+    <div class="post-md">
+        
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Q%EF%BC%9A%E5%AF%B9MySQL%E6%9D%A5%E8%AF%B4%EF%BC%8C%E4%BB%80%E4%B9%88%E6%98%AF%E6%88%90%E6%9C%AC%EF%BC%9F"><span class="post-toc-text">Q：对MySQL来说，什么是成本？</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Q%EF%BC%9A%E4%BC%98%E5%8C%96%E6%AD%A5%E9%AA%A4"><span class="post-toc-text">Q：优化步骤</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#%E5%AE%9E%E6%88%98"><span class="post-toc-text">实战</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E5%89%8D%E6%8F%90%EF%BC%9A"><span class="post-toc-text">前提：</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E6%A0%B9%E6%8D%AE%E6%90%9C%E7%B4%A2%E6%9D%A1%E4%BB%B6%EF%BC%8C%E6%89%BE%E5%87%BA%E6%89%80%E6%9C%89%E6%9C%89%E5%8F%AF%E8%83%BD%E4%BD%BF%E7%94%A8%E5%88%B0%E7%9A%84%E7%B4%A2%E5%BC%95"><span class="post-toc-text">根据搜索条件，找出所有有可能使用到的索引</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E8%AE%A1%E7%AE%97%E5%85%A8%E8%A1%A8%E6%89%AB%E6%8F%8F%E7%9A%84%E6%88%90%E6%9C%AC"><span class="post-toc-text">计算全表扫描的成本</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E8%AE%A1%E7%AE%97%E6%A0%B9%E6%8D%AE%E4%B8%8D%E5%90%8C%E7%9A%84%E7%B4%A2%E5%BC%95%E8%BF%9B%E8%A1%8C%E6%9F%A5%E8%AF%A2%E7%9A%84%E6%88%90%E6%9C%AC"><span class="post-toc-text">计算根据不同的索引进行查询的成本</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#%E9%80%89%E5%88%99%E6%88%90%E6%9C%AC%E6%9C%80%E4%BD%8E%E7%9A%84%E6%89%A7%E8%A1%8C%E6%96%B9%E6%A1%88"><span class="post-toc-text">选则成本最低的执行方案</span></a></li></ol></li></ol>
+        
+        <h3 id="Q：对MySQL来说，什么是成本？"><a href="#Q：对MySQL来说，什么是成本？" class="headerlink" title="Q：对MySQL来说，什么是成本？"></a>Q：对MySQL来说，什么是成本？</h3><ul>
+<li>CPU成本：检测是否符合条件等需要CPU完成的工作的成本</li>
+<li>I&#x2F;O成本：数据从磁盘到内存的加载成本，数据是按页加载的，所以在计算成本时，需要计算页数。</li>
+</ul>
+<p>在MySQL中，加载一个数据页到内存中的成本常数是<code>1.0</code>，检索一条记录是否匹配的成本常数是<code>0.2</code>.这两个常数在计算总成本时会经常用到。</p>
+<h3 id="Q：优化步骤"><a href="#Q：优化步骤" class="headerlink" title="Q：优化步骤"></a>Q：优化步骤</h3><ol>
+<li>根据搜索条件，找出所有有可能使用到的索引</li>
+<li>计算全表扫描的成本</li>
+<li>计算根据不同的索引进行查询的成本</li>
+<li>选则成本最低的执行方案</li>
+</ol>
+<hr>
+<h3 id="实战"><a href="#实战" class="headerlink" title="实战"></a>实战</h3><h4 id="前提："><a href="#前提：" class="headerlink" title="前提："></a>前提：</h4><p>（1）：表：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> single_table (</span><br><span class="line">	id <span class="type">INT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">	key1 <span class="type">VARCHAR</span> ( <span class="number">100</span> ),</span><br><span class="line">	key2 <span class="type">INT</span>,</span><br><span class="line">	key3 <span class="type">VARCHAR</span> ( <span class="number">100</span> ),</span><br><span class="line">	key_part1 <span class="type">VARCHAR</span> ( <span class="number">100</span> ),</span><br><span class="line">	key_part2 <span class="type">VARCHAR</span> ( <span class="number">100</span> ),</span><br><span class="line">	key_part3 <span class="type">VARCHAR</span> ( <span class="number">100</span> ),</span><br><span class="line">	common_field <span class="type">VARCHAR</span> ( <span class="number">100</span> ),</span><br><span class="line">	<span class="keyword">PRIMARY</span> KEY ( id ),</span><br><span class="line">	KEY idx_key1 ( key1 ),</span><br><span class="line">	<span class="keyword">UNIQUE</span> KEY idx_key2 ( key2 ),</span><br><span class="line">KEY idx_key3 ( key3 ),</span><br><span class="line">KEY idx_key_part ( key_part1, key_part2, key_part3 )) ENGINE <span class="operator">=</span> INNODB CHARSET <span class="operator">=</span> utf8;</span><br></pre></td></tr></table></figure>
+<p>（2）：SQL：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">	<span class="operator">*</span> </span><br><span class="line"><span class="keyword">FROM</span></span><br><span class="line">	single_table </span><br><span class="line"><span class="keyword">WHERE</span></span><br><span class="line">	key1 <span class="keyword">IN</span> ( <span class="string">&#x27;a&#x27;</span>, <span class="string">&#x27;b&#x27;</span>, <span class="string">&#x27;c&#x27;</span> ) </span><br><span class="line">	<span class="keyword">AND</span> key2 <span class="operator">&gt;</span> <span class="number">10</span><span class="keyword">AND</span> key2 <span class="operator">&lt;</span> <span class="number">1000</span><span class="keyword">AND</span> key3 <span class="operator">&gt;</span> key2 </span><br><span class="line">	<span class="keyword">AND</span> key_part1 <span class="keyword">LIKE</span> <span class="string">&#x27;%hello%&#x27;</span> </span><br><span class="line">	<span class="keyword">AND</span> common_field <span class="operator">=</span> <span class="string">&#x27;123&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="根据搜索条件，找出所有有可能使用到的索引"><a href="#根据搜索条件，找出所有有可能使用到的索引" class="headerlink" title="根据搜索条件，找出所有有可能使用到的索引"></a>根据搜索条件，找出所有有可能使用到的索引</h4><p>我们定义凡是索引列能和比较值形成一个范围区间的，都是有可能被使用到的<br>key1：key1列有索引，也是与常数进行比较的，有可能会被使用到<br>key2：大于10与小于1000，也是在与常数在进行比较，有可能会被使用到<br>key3：与key2进行比较，而key2不属于常数，不会被使用到<br>key_part1：使用到了模糊匹配，不是常数，不会被使用到<br>common_field：该列本身就没有索引，不会被使用到<br>综上，有可能被使用到的索引只有<code>idx_key1</code>和<code>idx_key2.</code></p>
+<h4 id="计算全表扫描的成本"><a href="#计算全表扫描的成本" class="headerlink" title="计算全表扫描的成本"></a>计算全表扫描的成本</h4><p>全表扫描的成本从两方面计算，<code>CPU成本</code>和<code>I/O成本</code>。<br>那么如何计算呢？我们可以通过<code>SHOW TABLE STATSU LIKE TABLE_NAME</code>来查看我们目标表的信息，我们关心其中的<code>Data_length</code>和<code>Rows</code>。在本例中，<code>Data_length</code>的大小是<code>2637824</code>，<code>Rows</code>是<code>9856</code>。<br>I&#x2F;O成本：通过<code>Data_length</code>计算，<code>Data_length</code>代表的是我们表所占字节数多少，那么根据默认的页大小16K来计算，2637824&#x2F;16&#x2F;1024&#x3D;162页，那么成本就是<code>162*1.0 + 1.1 = 163.1</code>，其中1.1是微调常数。<br>CPU成本：CPU成本我们通过行数计算，成本是<code>9856 * 0.2 + 1.0 = 1972.2 </code><br>总成本为：<code>1972.2 + 163.1 = 2135.3</code>  </p>
+<h4 id="计算根据不同的索引进行查询的成本"><a href="#计算根据不同的索引进行查询的成本" class="headerlink" title="计算根据不同的索引进行查询的成本"></a>计算根据不同的索引进行查询的成本</h4><p><strong>使用唯一二级索引idx_key2的成本</strong><br>第一步：计算二级索引I&#x2F;O成本，key2的范围区间（10，1000），MySQL的查询优化器认为读取一个范围区间的成本和读取一个数据页的成本是一样的，所以I&#x2F;O成本是<code>1 * 1.0 = 1.0</code><br>第二步：计算二级索引CPU成本（回表数），估算在（10,1000）内记录的数量。这里在进行估算时，取范围最左和最右两条记录，然后判断这两条记录相隔的远不远（是否超过10个数据页），不远的话，就遍历，远的话，就读10个数据页中的数据，然后预估整个区间大概有多少。根据算法得到key2的CPU成本是<code>95 * 0.2 + 0.01 = 19.01</code>，95是记录条数，0.01是微调常数。<br>第三步：计算回表成本，MySQL认为回一次表的成本和读取一个数据页的成本一样，所以回表成本是<code>95 * 1.0 = 95</code><br>第四步：计算回表后检索是否匹配的CPU成本，有多少条数据检索多少次，成本是<code>95 * 0.2 = 19.0</code><br>综上，使用idx_key2进行查询的成本是：<code>1 + 19.01 + 95 + 19 = 134.01</code><br><strong>使用普通二级索引idx_key1的成本</strong><br>使用key1查询的条件是，三个单点区间[‘a’, ‘b’, ‘c’]<br>第一步：计算二级索引I&#x2F;O成本，三个区间，所以成本是<code>3 * 1.0 = 3.0</code><br>第二步：计算二级索引CPU成本（回表数），获取符合三个区间的记录的最左和左右记录，本例中一共有118条，那么成本就是<code>118 * 0.2 + 0.01 = 23.61</code><br>第三步：回表操作的I&#x2F;O成本，<code>118 * 1.0 = 118</code><br>第四步：回表操作后的CPU成本，<code>118 * 0.2 23.6</code><br>综上，使用idx_key1进行查询的成本是<code>3.0 + 23.61 + 118 + 23.6 = 168.21</code></p>
+<h4 id="选则成本最低的执行方案"><a href="#选则成本最低的执行方案" class="headerlink" title="选则成本最低的执行方案"></a>选则成本最低的执行方案</h4><p>因为 134.01 &lt; 168.21 &lt; 2135.3，所以选择idx_key2来进行查询</p>
+
+    </div>
+
+    <div class="post-meta">
+        <i>
+        
+            <span>2023-05-31</span>
+            
+                <span>该篇文章被 remember</span>
+            
+            
+                <span>打上标签:
+                    
+                    
+                        <a href='/tags/innodb/'>
+                            innodb
+                        </a>
+                    
+                </span>
+             
+             
+        
+        </i>
+    </div>
+    
+        
+
+     
+</div>
+
+
+
+                    
+                    
+                    <div class="footer">
+    
+        <span> 
+             
+
+            
+                
+
+            
+        </span>
+    
+</div>
+<!--这是指一条线往下的内容-->
+<div class="footer-last">
+    
+            <span>无负今日</span>
+            
+                <span class="footer-last-span-right">remember</span>
+            
+    
+</div>
+
+
+    
+        
+<link rel="stylesheet" href="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/css/a11y-dark.min.css">
+
+        
+<script src="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/js/highlight.min.js"></script>
+
+        
+<script src="https://jsd.onmicrosoft.cn/npm/hexo-theme-a4@latest/source/js/highlightjs-line-numbers.js"></script>
+
+    
+
+
+<script>
+    hljs.initHighlightingOnLoad();
+    hljs.initLineNumbersOnLoad();
+</script>
+                </div>
+            
+    </body>
+</html>
