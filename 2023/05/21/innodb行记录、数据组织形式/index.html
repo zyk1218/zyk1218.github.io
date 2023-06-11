@@ -93,8 +93,8 @@
 <h3 id="2-innodb页的结构"><a href="#2-innodb页的结构" class="headerlink" title="2. innodb页的结构"></a>2. innodb页的结构</h3><h4 id="在讲页的结构之前，需要先了解innodb中数据的“行格式”"><a href="#在讲页的结构之前，需要先了解innodb中数据的“行格式”" class="headerlink" title="在讲页的结构之前，需要先了解innodb中数据的“行格式”"></a>在讲页的结构之前，需要先了解innodb中数据的“行格式”</h4><p>数据是以记录的形式存储在磁盘中的，那么数据是如何组织起来进行存放的呢？“行格式”就是规定了数据如何存放的一个协议，所以“行格式”也称为“记录格式”</p>
 <ul>
 <li>行格式的种类： <ul>
-<li>compact<br><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/3/12/169710e8fafc21aa~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp#id=VCu7e&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title="><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683988033454-bb8be8e5-662d-4a59-a379-4ca750184bfb.webp#averageHue=%23f7ebe3&clientId=ufe91ca8b-3712-4&from=paste&id=u9b1d8b97&originHeight=250&originWidth=783&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u69c9a56d-974f-47b7-9990-38003b063ee&title="><br>从图来看，行格式分为两部分，一部分用于记录额外信息，一部分用于记录真实数据。</li>
-<li>redundant<br><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/3/12/169710e99a69ba3d~tplv-t2oaga2asx-zoom-in-crop-mark:3024:0:0:0.awebp#id=HHzFP&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title="><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683988046339-97b714bb-322c-474e-bd52-2a3bd78ad2e0.webp#averageHue=%23f6e9e0&clientId=ufe91ca8b-3712-4&from=paste&id=u94dd4dd6&originHeight=251&originWidth=618&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=u6136e7ba-0f4d-4590-b6a7-4c16f29317b&title="></li>
+<li>compact<br><img src="https://img1.imgtp.com/2023/06/11/YF5b5avH.png"><br>从图来看，行格式分为两部分，一部分用于记录额外信息，一部分用于记录真实数据。</li>
+<li>redundant<br><img src="https://img1.imgtp.com/2023/06/11/rZLKob2y.png"></li>
 <li>dynamic</li>
 <li>compressd</li>
 </ul>
@@ -116,7 +116,7 @@
 </ul>
 </li>
 </ul>
-<h4 id="innodb的页结构"><a href="#innodb的页结构" class="headerlink" title="innodb的页结构"></a>innodb的页结构</h4><p><img src="https://cdn.nlark.com/yuque/0/2023/webp/29572773/1683987973550-662e738c-6bdc-40be-a50b-5cf33e606473.webp#averageHue=%23d1a145&clientId=ufe91ca8b-3712-4&from=paste&id=u4d9be615&originHeight=1072&originWidth=934&originalType=url&ratio=1.25&rotation=0&showTitle=false&status=done&style=none&taskId=uca58be8c-ef5c-444a-8d58-4ba98f71eba&title="></p>
+<h4 id="innodb的页结构"><a href="#innodb的页结构" class="headerlink" title="innodb的页结构"></a>innodb的页结构</h4><p><img src="https://img1.imgtp.com/2023/06/11/0sS2J9Ac.png"></p>
 <ul>
 <li>file header：文件头，占38byte，存储页的通用信息</li>
 <li>page header：页头，占56byte，存储页的专有信息</li>
